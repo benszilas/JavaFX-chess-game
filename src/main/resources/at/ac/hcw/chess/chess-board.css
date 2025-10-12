@@ -1,0 +1,47 @@
+/* Chess Board CSS Styles */
+/* Note: stroke-width values should match STROKE_WIDTH constant in ChessBoard.java */
+
+/* Light squares - pure white */
+.light-square {
+    -fx-fill: white;
+    -fx-stroke: #cccccc;
+    -fx-stroke-width: 3;
+}
+
+/* Dark squares - pure black */
+.dark-square {
+    -fx-fill: black;
+    -fx-stroke: #333333;
+    -fx-stroke-width: 3;
+}
+
+/* Hover effects for better user interaction */
+.light-square:hover {
+    -fx-fill: #f5f5f5;
+    -fx-stroke: #999999;
+    -fx-stroke-width: 3;
+}
+
+.dark-square:hover {
+    -fx-fill: #333333;
+    -fx-stroke: #666666;
+    -fx-stroke-width: 3;
+}
+
+/* Selected square highlighting */
+.square-selected {
+    -fx-stroke: #ffff00;
+    -fx-stroke-width: 3;
+}
+
+/* Possible move highlighting */
+.square-possible-move {
+    -fx-stroke: #00ff00;
+    -fx-stroke-width: 3;
+}
+
+/* Last move highlighting */
+.square-last-move {
+    -fx-stroke: #ff6600;
+    -fx-stroke-width: 3;
+}

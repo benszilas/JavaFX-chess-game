@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Import statements for JavaFX components -->
+
+<?import javafx.scene.layout.*?>
+
+<!-- Chess board container: GridPane for 8x8 chess board layout -->
+<!-- The controller will ensure this GridPane maintains a square aspect ratio -->
+<?import at.ac.hcw.chess.ChessBoard?>
+<ChessBoard xmlns:fx="http://javafx.com/fxml"
+            fx:id="chessBoard"
+            fx:controller="at.ac.hcw.chess.BoardController">
+
+
+</ChessBoard>
