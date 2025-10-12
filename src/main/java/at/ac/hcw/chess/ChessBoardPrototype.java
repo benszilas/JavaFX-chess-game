@@ -12,6 +12,10 @@ public class ChessBoardPrototype extends Application {
      * the side length of a single chess board square in pixels
      */
     public final static double SQUARE_SIZE = 50;
+    public enum PLAYER {
+        WHITE,
+        BLACK
+    }
 
     @Override
     public void start(Stage stage) throws IOException {
