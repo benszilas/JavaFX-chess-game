@@ -10,7 +10,7 @@ public class GameModel {
     private final ChessPieceList chessPieces;
     private final ChessPieceList promotablePieces;
     private ChessPiece selectedPiece = null;
-    private final ArrayList<Move> moveHistory;
+    private final ArrayList<MoveRecord> moveHistory;
     private Color currentPlayer;
 
     public GameModel() {
@@ -22,7 +22,20 @@ public class GameModel {
 
         this.currentPlayer = Color.WHITE;
 
-        this.moveHistory = new ArrayList<Move>();
+        this.moveHistory = new ArrayList<MoveRecord>();
+    }
+
+    public GameModel(ChessPieceList customPieces) {
+        this.chessPieces = customPieces;
+
+        //need function to count promotable pieces
+        this.promotablePieces = new ChessPieceList();
+        this.promotablePieces.add(new Queen(new Position(1,1), Color.BLACK));
+        this.promotablePieces.add(new Queen(new Position(8,8), Color.WHITE));
+
+        this.currentPlayer = Color.WHITE;
+
+        this.moveHistory = new ArrayList<MoveRecord>();
     }
 
     public ChessPieceList getChessPieces() {
@@ -45,7 +58,7 @@ public class GameModel {
         this.selectedPiece = chessPieces.getPiece(position);
     }
 
-    public ArrayList<Move> getMoveHistory() {
+    public ArrayList<MoveRecord> getMoveHistory() {
         return moveHistory;
     }
 
@@ -72,27 +85,29 @@ public class GameModel {
     }
 
     private void printChessBoardLine(ChessPiece[][] board, StringBuilder charBoard, int row) {
-        charBoard.append(row);
+        charBoard.append(row + 1);
+        charBoard.append(" ");
         for (int column = 0; column < 8; column++) {
             if (board[row][column] != null) {
                 charBoard.append(board[row][column].toString());
             } else if ((row + column & 0x1) == 0) {
-                charBoard.append("□");
+                charBoard.append("＿");
             } else {
-                charBoard.append("■");
+                charBoard.append("⛆");
             }
         }
-        charBoard.append(row);
+        charBoard.append(row + 1);
         charBoard.append(System.lineSeparator());
     }
 
     @Override
     public String toString() {
         ChessPiece[][] board = _2DBoard();
-        StringBuilder charBoard = new StringBuilder(" ABCDEFGH " + System.lineSeparator());
+        StringBuilder charBoard = new StringBuilder("  ＡＢＣＤＥＦＧＨ " + System.lineSeparator());
         for (int row = 0; row < 8; row++) {
             printChessBoardLine(board, charBoard, row);
         }
+        charBoard.append("  ＡＢＣＤＥＦＧＨ ");
         return charBoard.toString();
     }
 }

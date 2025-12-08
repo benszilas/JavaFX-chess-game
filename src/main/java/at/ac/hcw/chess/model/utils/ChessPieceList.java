@@ -30,4 +30,16 @@ public class ChessPieceList extends ArrayList<ChessPiece> {
         }
         return null;
     }
+
+    /**
+     * adds a piece to the list, if there is no piece at the same position
+     * @param piece the piece to add
+     */
+    @Override
+    public void addLast(ChessPiece piece) {
+        ChessPiece duplicate = this.getPiece(piece.getPosition());
+        if (duplicate == null){
+            this.add(piece);
+        }
+    }
 }

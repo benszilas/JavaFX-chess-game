@@ -1,5 +1,6 @@
 package at.ac.hcw.chess.model.chessPieces;
 
+import at.ac.hcw.chess.model.utils.ChessPieceList;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.Position;
 
@@ -10,6 +11,7 @@ public abstract class ChessPiece {
     private final Color color;
 
     public ChessPiece(Position position, Color color) {
+        this.position = position;
         this.color = color;
     }
 
@@ -21,7 +23,7 @@ public abstract class ChessPiece {
         return this.position;
     }
 
-    public ArrayList <Position> getValidMoves() {
+    public ArrayList <Position> getValidMoves(ChessPieceList piecesOnBoard) {
         ArrayList <Position> validMoves = new ArrayList <Position>();
         return validMoves;
     }
