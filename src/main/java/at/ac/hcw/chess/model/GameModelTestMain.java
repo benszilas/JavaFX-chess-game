@@ -5,6 +5,7 @@ import at.ac.hcw.chess.model.chessPieces.Queen;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.PopulateBoard;
 import at.ac.hcw.chess.model.utils.Position;
+import at.ac.hcw.chess.model.utils.SquareName;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -90,6 +91,8 @@ public class GameModelTestMain {
         GameModel customGame1 = new GameModel(PopulateBoard.noPawnsBoard());
         pw.println("made custom game:");
         pw.println(customGame1);
+        ChessPiece A1 = customGame1.getChessPieces().getPiece(new Position(SquareName.A1));
+        pw.println("piece at A1: "  + A1);
         pw.close();
     }
 }

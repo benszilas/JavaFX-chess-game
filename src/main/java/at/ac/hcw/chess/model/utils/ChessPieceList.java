@@ -15,7 +15,7 @@ public class ChessPieceList extends ArrayList<ChessPiece> {
 
     public ChessPiece getPiece(Position at) {
         for (ChessPiece piece : this) {
-            if (piece.getPosition().getColumn() == at.getColumn() && piece.getPosition().getRow() == at.getRow()) {
+            if (piece.getPosition().equals(at)) {
                 return piece;
             }
         }
@@ -36,10 +36,12 @@ public class ChessPieceList extends ArrayList<ChessPiece> {
      * @param piece the piece to add
      */
     @Override
-    public void addLast(ChessPiece piece) {
+    public boolean add(ChessPiece piece) {
         ChessPiece duplicate = this.getPiece(piece.getPosition());
         if (duplicate == null){
-            this.add(piece);
+            super.add(piece);
+            return true;
         }
+        return false;
     }
 }

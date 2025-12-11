@@ -15,8 +15,8 @@ public class Position {
 
     public Position(SquareName squareName) {
         int ordinal = squareName.ordinal();
-        this.column = new SimpleIntegerProperty((char)(ordinal % 8) + 'A');
-        this.row = new SimpleIntegerProperty((char)(ordinal % 8) + '1');
+        this.column = new SimpleIntegerProperty((ordinal % 8) + 1);
+        this.row = new SimpleIntegerProperty((ordinal / 8) + 1);
     }
 
     public int getColumn() {
