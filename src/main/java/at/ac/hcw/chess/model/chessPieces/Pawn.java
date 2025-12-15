@@ -4,6 +4,8 @@ import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.Position;
 
 public class Pawn extends ChessPiece{
+    private int rank = 1;
+
     public Pawn(Position position, Color color) {
         super(position, color);
     }
