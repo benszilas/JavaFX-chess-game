@@ -2,9 +2,11 @@ package at.ac.hcw.chess.model.utils;
 
 import javafx.beans.property.SimpleIntegerProperty;
 
-public class Position {
+public class Position implements Cloneable {
     private final SimpleIntegerProperty column;
     private final SimpleIntegerProperty row;
+    public static int MIN = 1;
+    public static int MAX = 8;
 
     public Position(int column, int row) throws IndexOutOfBoundsException {
         this.column = new SimpleIntegerProperty();
@@ -15,8 +17,8 @@ public class Position {
 
     public Position(SquareName squareName) {
         int ordinal = squareName.ordinal();
-        this.column = new SimpleIntegerProperty((ordinal % 8) + 1);
-        this.row = new SimpleIntegerProperty((ordinal / 8) + 1);
+        this.column = new SimpleIntegerProperty((ordinal % Position.MAX) + Position.MIN);
+        this.row = new SimpleIntegerProperty((ordinal / Position.MAX) + Position.MIN);
     }
 
     public int getColumn() {
@@ -28,21 +30,21 @@ public class Position {
     }
 
     protected void setColumn(int column) throws IndexOutOfBoundsException {
-        if (column < 1 || column > 8) {
+        if (column < Position.MIN || column > Position.MAX) {
             throw new IndexOutOfBoundsException("Column " + column + " out of range of the chess board!");
         }
         this.column.set(column);
     }
 
     protected void setRow(int row) throws IndexOutOfBoundsException {
-        if (row < 1 || row > 8) {
+        if (row < Position.MIN || row > Position.MAX) {
             throw new IndexOutOfBoundsException("Row " + row + " out of range of the chess board!");
         }
         this.row.set(row);
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
+    public Object clone() {
         return new Position(this.getColumn(), this.getRow());
     }
 
@@ -56,7 +58,7 @@ public class Position {
     @Override
     public String toString() {
         char[] chessPosition = {
-                (char) (this.getColumn() - 1 + 'A'),
+                (char) (this.getColumn() - Position.MIN + 'A'),
                 (char) (this.getRow() + '0')
         };
         return new String(chessPosition);

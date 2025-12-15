@@ -3,6 +3,7 @@ package at.ac.hcw.chess.model.utils;
 import java.util.ArrayList;
 
 public class MoveList extends ArrayList<Position> {
+
     @Override
     public boolean add(Position position) {
         if (this.contains(position))

@@ -49,8 +49,8 @@ public class ChessPieceTest {
     private void testMoves(String pieceName, ChessPiece piece, ChessPieceList board, MoveList expected) {
         this.pw.println("Validating moves of " + pieceName);
 
-        piece.setValidMoves(board);
-        var pieceMoves = piece.getValidMoves();
+        piece.setPossibleMoves(board);
+        var pieceMoves = piece.getPossibleMoves();
 
         this.pw.println(pieceMoves);
         try {
