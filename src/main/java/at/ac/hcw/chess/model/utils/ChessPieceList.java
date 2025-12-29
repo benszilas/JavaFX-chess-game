@@ -32,6 +32,21 @@ public class ChessPieceList extends ArrayList<ChessPiece> {
     }
 
     /**
+     * find pieces by class and color
+     * @param pieceClass Class to be found such as King.class
+     * @param color
+     * @return a list of references to the found pieces. if nothing found, an empty list
+     */
+    public ChessPieceList findPieces(Class<?> pieceClass, Color color) {
+        var foundPieces = new ChessPieceList();
+        for (ChessPiece piece : this) {
+            if (piece.getClass() == pieceClass && piece.getColor() == color)
+                foundPieces.add(piece);
+        }
+        return foundPieces;
+    }
+
+    /**
      * adds a piece to the list, if there is no piece at the same position
      * @param piece the piece to add
      */

@@ -4,6 +4,7 @@ import at.ac.hcw.chess.model.utils.ChessPieceList;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
+import javafx.geometry.Pos;
 
 public abstract class ChessPiece {
     protected Position position;
@@ -43,6 +44,7 @@ public abstract class ChessPiece {
     /**
      * check possible moves in a straight line range
      * <p><b>can't</b> move through pieces</p>
+     *
      * @param piecesOnBoard the current pieces on the chessboard
      * @return empty squares and opponent pieces visible in a straight line
      */
@@ -60,6 +62,7 @@ public abstract class ChessPiece {
     /**
      * check possible moves in a diagonal range
      * <p><b>can't</b> move through pieces</p>
+     *
      * @param piecesOnBoard the current pieces on the chessboard
      * @return empty squares and opponent pieces visible in a diagonal line
      */
@@ -77,8 +80,9 @@ public abstract class ChessPiece {
     /**
      * check if the piece can step or jump to any target
      * <p><b>can</b> move through pieces</p>
+     *
      * @param piecesOnBoard board to check
-     * @param targets the moves to try
+     * @param targets       the moves to try
      * @return all targets excluding friendly pieces
      */
     protected MoveList stepOrJump(ChessPieceList piecesOnBoard, MoveList targets) {
@@ -87,15 +91,66 @@ public abstract class ChessPiece {
         for (Position p : targets) {
             ChessPiece piece = piecesOnBoard.getPiece(p);
             if (piece == null || piece.getColor() != this.color)
-                possibleMoves.add((Position) p.clone());
+                possibleMoves.add(p.clone());
         }
 
         return possibleMoves;
     }
 
-    public boolean isPinned(ChessPieceList piecesOnBoard) {
-        // implement logic to check if piece is pinned to its King
-        return false;
+    /**
+     * "Seeing" a piece means there are no pieces between this and the other one.<br>
+     * The other piece has to stand in a straight or diagonal line from this one.
+     *
+     * @return true if the piece is seen
+     */
+    private boolean canSeePiece(Position otherPiece, ChessPieceList piecesOnBoard) {
+        if (!otherPiece.isInStraightLine(this.getPosition()) || !otherPiece.isDiagonal(this.getPosition()))
+            return false;
+
+        int rowDelta = this.getPosition().rowDelta(otherPiece);
+        int columnDelta = this.getPosition().columnDelta(otherPiece);
+
+        Position next = new Position(this.getPosition().getColumn() + columnDelta, this.getPosition().getRow() + rowDelta);
+        while (piecesOnBoard.getPiece(next) == null)
+            next = new Position(next.getColumn() + columnDelta, next.getRow() + rowDelta);
+
+        return next.equals(otherPiece);
+    }
+
+    /**
+     * a piece is pinned if moving it could potentially put its own king in check<br>
+     * if pinned, the piece can only move in a line between the own king and the attacker, or take the attacker
+     *
+     * @return - null if not pinned<br>
+     * - if pinned, a list of positions between the king and the attacker including the attacker
+     */
+    public MoveList pinnedMoves(ChessPieceList piecesOnBoard) {
+        Position ownKing = piecesOnBoard.findPieces(King.class, this.color).getFirst().getPosition();
+        boolean isPinned = false;
+        var pinnedMoves = new MoveList();
+
+        if (this.canSeePiece(ownKing, piecesOnBoard)) {
+            int columnDelta = ownKing.columnDelta(this.position);
+            int rowDelta = ownKing.rowDelta(this.position);
+            pinnedMoves = range(piecesOnBoard, columnDelta, rowDelta);
+            if (!pinnedMoves.isEmpty() && piecesOnBoard.getPiece(pinnedMoves.getLast()) != null) {
+                ChessPiece opponentPiece = piecesOnBoard.getPiece(pinnedMoves.getLast());
+                if (opponentPiece.getPosition().isInStraightLine(this.position)
+                        && (opponentPiece.getClass() == Queen.class || opponentPiece.getClass() == Rook.class)) {
+                    isPinned = true;
+                }
+                if (opponentPiece.getPosition().isDiagonal(this.position)
+                        && (opponentPiece.getClass() == Queen.class || opponentPiece.getClass() == Bishop.class)) {
+                    isPinned = true;
+                }
+            }
+            if (isPinned) {
+                pinnedMoves.addAll(range(piecesOnBoard, -columnDelta, -rowDelta));
+            } else {
+                pinnedMoves = null;
+            }
+        }
+        return pinnedMoves;
     }
 
     public Color getColor() {

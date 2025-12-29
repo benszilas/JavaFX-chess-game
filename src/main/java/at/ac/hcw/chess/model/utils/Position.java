@@ -2,7 +2,7 @@ package at.ac.hcw.chess.model.utils;
 
 import javafx.beans.property.SimpleIntegerProperty;
 
-public class Position implements Cloneable {
+public class Position {
     private final SimpleIntegerProperty column;
     private final SimpleIntegerProperty row;
     public static int MIN = 1;
@@ -43,8 +43,26 @@ public class Position implements Cloneable {
         this.row.set(row);
     }
 
+    public boolean isInStraightLine(Position otherPosition) {
+        return (otherPosition.getRow() - this.getRow() == 0 || otherPosition.getColumn() - this.getColumn() == 0);
+    }
+
+    public boolean isDiagonal(Position otherPosition) {
+        return (Math.abs(otherPosition.getRow() - this.getRow()) == Math.abs(otherPosition.getColumn() - this.getColumn()));
+    }
+
+    public int columnDelta(Position other) {
+        int columnDifference = other.getColumn() - this.getColumn();
+        return (columnDifference != 0) ? columnDifference / Math.abs(columnDifference) : 0;
+    }
+
+    public int rowDelta(Position other) {
+        int rowDifference = other.getRow() - this.getRow();
+        return (rowDifference != 0) ? rowDifference / Math.abs(rowDifference) : 0;
+    }
+
     @Override
-    public Object clone() {
+    public Position clone() {
         return new Position(this.getColumn(), this.getRow());
     }
 
