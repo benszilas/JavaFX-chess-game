@@ -12,9 +12,13 @@ public class King extends ChessPiece {
         super(position, color);
     }
 
+    /**
+     * the king is the only piece that can not be pinned<br>
+     * this will always return null
+     */
     @Override
-    public boolean isPinned(ChessPieceList piecesOnBoard) {
-        return false;
+    public MoveList pinnedMoves(ChessPieceList piecesOnBoard) {
+        return null;
     }
 
     @Override
