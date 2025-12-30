@@ -62,6 +62,19 @@ public class ChessPieceTest {
         this.pw.println(pieceName + " moves are validated");
     }
 
+    public void testMoves(String pieceName, MoveList pieceMoves, MoveList expected) {
+        System.out.println("Validating moves of " + pieceName);
+
+        System.out.println(pieceMoves);
+        try {
+            compareMoves(pieceMoves, expected);
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new RuntimeException(e);
+        }
+        System.out.println(pieceName + " moves are validated");
+    }
+
     private GameModel newBoard(ChessPieceList pieces) {
         GameModel board = new GameModel(pieces);
         this.pw.println("created board");

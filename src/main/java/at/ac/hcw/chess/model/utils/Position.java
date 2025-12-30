@@ -51,11 +51,21 @@ public class Position {
         return (Math.abs(otherPosition.getRow() - this.getRow()) == Math.abs(otherPosition.getColumn() - this.getColumn()));
     }
 
+    /**
+     * calculate the column direction from this piece to the other
+     * @param other position of the target piece
+     * @return -1, 0, 1 depending on whether the target column is smaller, the same, or bigger
+     */
     public int columnDelta(Position other) {
         int columnDifference = other.getColumn() - this.getColumn();
         return (columnDifference != 0) ? columnDifference / Math.abs(columnDifference) : 0;
     }
 
+    /**
+     * calculate the row direction from this piece to the other
+     * @param other position of the target piece
+     * @return -1, 0, 1 depending on whether the target row is smaller, the same, or bigger
+     */
     public int rowDelta(Position other) {
         int rowDifference = other.getRow() - this.getRow();
         return (rowDifference != 0) ? rowDifference / Math.abs(rowDifference) : 0;

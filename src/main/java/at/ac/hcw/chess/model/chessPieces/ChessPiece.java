@@ -14,9 +14,10 @@ public abstract class ChessPiece {
     public ChessPiece(Position position, Color color) {
         this.position = position;
         this.color = color;
+        this.possibleMoves = new MoveList();
     }
 
-    protected MoveList range(ChessPieceList piecesOnBoard, int deltaCol, int deltaRow) {
+    public MoveList range(ChessPieceList piecesOnBoard, int deltaCol, int deltaRow) {
         MoveList possibleRange = new MoveList();
         ChessPiece foundPiece = null;
         Position p = null;
@@ -103,8 +104,8 @@ public abstract class ChessPiece {
      *
      * @return true if the piece is seen
      */
-    private boolean canSeePiece(Position otherPiece, ChessPieceList piecesOnBoard) {
-        if (!otherPiece.isInStraightLine(this.getPosition()) || !otherPiece.isDiagonal(this.getPosition()))
+    public boolean canSeePiece(Position otherPiece, ChessPieceList piecesOnBoard) {
+        if (!otherPiece.isInStraightLine(this.getPosition()) && !otherPiece.isDiagonal(this.getPosition()))
             return false;
 
         int rowDelta = this.getPosition().rowDelta(otherPiece);
@@ -127,7 +128,7 @@ public abstract class ChessPiece {
     protected MoveList pinnedMoves() {
         Position ownKing = piecesOnBoard.findPieces(King.class, this.color).getFirst().getPosition();
         boolean isPinned = false;
-        var pinnedMoves = new MoveList();
+        MoveList pinnedMoves = null;
 
         if (this.canSeePiece(ownKing, piecesOnBoard)) {
             int columnDelta = ownKing.columnDelta(this.position);
