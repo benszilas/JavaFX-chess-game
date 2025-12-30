@@ -17,7 +17,7 @@ public class King extends ChessPiece {
      * this will always return null
      */
     @Override
-    public MoveList pinnedMoves(ChessPieceList piecesOnBoard) {
+    protected MoveList pinnedMoves() {
         return null;
     }
 
@@ -36,9 +36,16 @@ public class King extends ChessPiece {
         this.possibleMoves = stepOrJump(piecesOnBoard, movesToTry);
     }
 
-    public ArrayList<MoveList> checkedBy(ChessPieceList piecesOnBoard) {
-        var checkedBy = new ArrayList<MoveList>();
-        return checkedBy;
+    @Override
+    protected void preventSelfCheck() {
+        var opponentPieces = piecesOnBoard.stream()
+                .filter(piece -> piece.getColor() != this.color).toList();
+
+        possibleMoves.removeIf(kingMove ->
+                opponentPieces.stream().anyMatch(opponentPiece ->
+                        opponentPiece.getPossibleMoves().contains(kingMove)
+                )
+        );
     }
 
     @Override

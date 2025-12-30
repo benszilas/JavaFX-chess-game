@@ -4,12 +4,12 @@ import at.ac.hcw.chess.model.utils.ChessPieceList;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
-import javafx.geometry.Pos;
 
 public abstract class ChessPiece {
     protected Position position;
     protected final Color color;
     protected MoveList possibleMoves;
+    protected ChessPieceList piecesOnBoard;
 
     public ChessPiece(Position position, Color color) {
         this.position = position;
@@ -124,7 +124,7 @@ public abstract class ChessPiece {
      * @return - null if not pinned<br>
      * - if pinned, a list of positions between the king and the attacker including the attacker
      */
-    public MoveList pinnedMoves(ChessPieceList piecesOnBoard) {
+    protected MoveList pinnedMoves() {
         Position ownKing = piecesOnBoard.findPieces(King.class, this.color).getFirst().getPosition();
         boolean isPinned = false;
         var pinnedMoves = new MoveList();
@@ -172,6 +172,18 @@ public abstract class ChessPiece {
 
     public MoveList getPossibleMoves() {
         return this.possibleMoves;
+    }
+
+    protected void preventSelfCheck() {
+        var pinnedMoves = pinnedMoves();
+        if (pinnedMoves != null)
+            possibleMoves.removeIf(move -> !pinnedMoves.contains(move));
+    }
+
+    public void setLegalMoves(ChessPieceList piecesOnBoard) {
+        this.piecesOnBoard = piecesOnBoard;
+        setPossibleMoves(piecesOnBoard);
+        preventSelfCheck();
     }
 
     public boolean possibleMove(Position position) {
