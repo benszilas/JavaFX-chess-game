@@ -28,6 +28,7 @@ public class GameController {
     // 1. validate player
     // 2.a select piece by calling model.selectPiece();
     // highlight selected piece in the view
+    // get allowed moves of this chessPiece with piece.getPossibleMoves()
     // 2.b else if model.getSelectedPiece() == the piece that is clicked
     // call model.validateMove()
     // 3. move piece
