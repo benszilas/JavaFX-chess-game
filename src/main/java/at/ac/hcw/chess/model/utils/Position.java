@@ -1,5 +1,6 @@
 package at.ac.hcw.chess.model.utils;
 
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 public class Position {
@@ -29,6 +30,14 @@ public class Position {
         return row.get();
     }
 
+    public IntegerProperty getColumnProperty() {
+        return column;
+    }
+
+    public IntegerProperty getRowProperty() {
+        return row;
+    }
+
     protected void setColumn(int column) throws IndexOutOfBoundsException {
         if (column < Position.MIN || column > Position.MAX) {
             throw new IndexOutOfBoundsException("Column " + column + " out of range of the chess board!");
@@ -53,6 +62,7 @@ public class Position {
 
     /**
      * calculate the column direction from this piece to the other
+     *
      * @param other position of the target piece
      * @return -1, 0, 1 depending on whether the target column is smaller, the same, or bigger
      */
@@ -63,6 +73,7 @@ public class Position {
 
     /**
      * calculate the row direction from this piece to the other
+     *
      * @param other position of the target piece
      * @return -1, 0, 1 depending on whether the target row is smaller, the same, or bigger
      */

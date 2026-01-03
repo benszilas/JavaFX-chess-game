@@ -8,6 +8,7 @@ import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
 import at.ac.hcw.chess.view.GameView;
+import javafx.scene.layout.Region;
 
 public class GameController {
     private final GameModel model;
@@ -23,8 +24,16 @@ public class GameController {
         view = new GameView(model);
     }
 
-    public GameView getView() {
-        return view;
+    // hook on click:
+    // 1. validate player
+    // 2.a select piece by calling model.selectPiece();
+    // highlight selected piece in the view
+    // 2.b else if model.getSelectedPiece() == the piece that is clicked
+    // call model.validateMove()
+    // 3. move piece
+
+    public Region getView() {
+        return view.build();
     }
 
     /**
