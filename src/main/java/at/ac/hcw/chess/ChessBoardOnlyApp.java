@@ -24,11 +24,12 @@ public class ChessBoardOnlyApp extends Application {
                 Screen.getPrimary().getBounds().getHeight() - 100);
         primaryStage.setScene(scene);
         primaryStage.show();
+        controller.play();
     }
 
     private Region createContent() {
         this.controller = new GameController();
-        return controller.getView();
+        return controller.buildView();
     }
 }
 

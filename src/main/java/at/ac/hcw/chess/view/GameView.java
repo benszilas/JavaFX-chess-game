@@ -12,18 +12,27 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.util.Builder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class GameView implements Builder<Region> {
     private final GameModel model;
+    private Region viewRoot;
+    private GridPane chessBoard;
+    private final List<Node> pieceViews;
+    private final List<Node> chessSquares;
 
     public GameView(GameModel model) {
         this.model = model;
+        chessSquares = new ArrayList<>();
+        pieceViews = new ArrayList<>();
     }
 
     @Override
     public Region build() {
         BorderPane container = new BorderPane();
+        viewRoot = container;
         container.setCenter(createChessBoard());
         container.setTop(new HBox(new Label("Moves placeholder")));
         container.setBottom(new HBox(new Label("Menu placeholder")));
@@ -32,8 +41,25 @@ public class GameView implements Builder<Region> {
         return container;
     }
 
+    public Region getViewRoot() {
+        return viewRoot;
+    }
+
+    public List<Node> getChessSquares() {
+        return chessSquares;
+    }
+
+    public List<Node> getPieceViews() {
+        return pieceViews;
+    }
+
+    public GridPane getChessBoard() {
+        return chessBoard;
+    }
+
     private Region createChessBoard() {
         var board = new GridPane();
+        this.chessBoard = board;
         int size = 10;
 
         board.getStylesheets().add(Objects.requireNonNull(getClass().getResource("chess-board.css")).toExternalForm());
@@ -59,6 +85,7 @@ public class GameView implements Builder<Region> {
                 } else {
                     square = new Region();
                     if (row != 0 && row != size - 1 && col != size - 1) {
+                        chessSquares.add(square);
                         square.getStyleClass().add(
                                 (row + col) % 2 == 0 ? "light-square" : "dark-square"
                         );

@@ -10,8 +10,8 @@ public class GameControllerTest {
     private final ChessPieceTest pieceTest = new ChessPieceTest();
 
     public void test1() {
-        var model = new GameModel(PopulateBoard.checkmate1());
-        var controller = new GameController(model);
+        var pieces = PopulateBoard.checkmate1();
+        var controller = new GameController(pieces);
         System.out.println("testing checkmate");
         controller.lookForGameOver();
         var expectedBlackRookMoves = new MoveList();
@@ -31,27 +31,26 @@ public class GameControllerTest {
         expectedBlackRookMoves.add(new Position(SquareName.A8));
 
         pieceTest.testMoves("A1 black Rook",
-                model.getChessPieces().findPieces(Rook.class, Color.BLACK).getFirst().getPossibleMoves(), expectedBlackRookMoves);
+                pieces.findPieces(Rook.class, Color.BLACK).getFirst().getPossibleMoves(), expectedBlackRookMoves);
     }
 
     public void test2() {
-        var model = new GameModel(PopulateBoard.draw1());
-        var controller = new GameController(model);
+        var controller = new GameController(PopulateBoard.draw1());
         System.out.println("testing draw");
         controller.lookForGameOver();
     }
 
     public void test3() {
-        var model = new GameModel(PopulateBoard.mateInOne1());
-        var controller = new GameController(model);
+        var customPieces = PopulateBoard.mateInOne1();
+        var controller = new GameController(customPieces);
         System.out.println("testing mate in one");
         controller.lookForGameOver();
-        var whiteRook = model.getChessPieces().findPieces(Rook.class, Color.WHITE).getFirst();
+        var whiteRook = customPieces.findPieces(Rook.class, Color.WHITE).getFirst();
         var expectedWhiteRookMoves = new MoveList();
         expectedWhiteRookMoves.add(new Position(SquareName.D1));
         System.out.println();
         pieceTest.testMoves("White D8 Rook", whiteRook.getPossibleMoves(), expectedWhiteRookMoves);
-        System.out.println(model);
+        System.out.println(controller.getModel());
     }
 
     public static void main(String[] args) {
