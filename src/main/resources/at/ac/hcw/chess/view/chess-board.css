@@ -43,3 +43,7 @@
     -fx-stroke: #ff6600;
     -fx-stroke-width: 3;
 }
+
+.selected-piece {
+    -fx-effect: dropshadow(gaussian, gold, 20, 0.6, 0, 0);
+}

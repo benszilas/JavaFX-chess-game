@@ -10,11 +10,8 @@ import at.ac.hcw.chess.model.utils.Position;
 import at.ac.hcw.chess.view.GameView;
 import javafx.event.Event;
 import javafx.scene.Node;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-
-import java.util.List;
 
 public class GameController {
     private final GameModel model;
@@ -22,43 +19,37 @@ public class GameController {
 
     public GameController() {
         model = new GameModel();
-        view = new GameView(model);
+        view = new GameView(model, this);
+        lookForGameOver();
     }
 
     public GameController(ChessPieceList customPieces) {
         this.model = new GameModel(customPieces);
-        view = new GameView(model);
+        view = new GameView(model, this);
+        lookForGameOver();
+    }
+
+    public Region getView() {
+        return view.build();
     }
 
     public GameModel getModel() {
         return model;
     }
 
-    public GameView getView() {
+    public GameView view() {
         return view;
     }
 
-    public void play() {
-        setHandlers();
-    }
-
-    private void setHandlers() {
-        List<Node> actionableBoardElements = view.getChessSquares();
-        actionableBoardElements.addAll(view.getPieceViews());
-
-        for (Node node : actionableBoardElements) {
-            node.setOnMouseClicked(mouseEvent -> clickChessBoard(mouseEvent, node));
-        }
-    }
-
-    private void clickChessBoard(Event mouseEvent, Node node) {
+    public void clickChessBoard(Event mouseEvent, Node node) {
         int col = GridPane.getColumnIndex(node);
         int row = GridPane.getRowIndex(node);
 
         selectPiece(col, row);
-        if (moveSelectedPiece(col, row)) {
+        if (moveSelectedPiece(col, row, node)) {
             lookForGameOver();
             changePlayer();
+            view.redraw();
         }
     }
 
@@ -66,12 +57,20 @@ public class GameController {
         ChessPiece piece = model.getChessPieces().getPiece(col, row);
 
         if (piece != null && piece.getColor() == model.getCurrentPlayer()) {
+            view.removeHighlight(model.getSelectedPiece());
+            view.addHighlight(col, row);
             model.selectPiece(piece);
             System.out.println(piece + " at " + piece.getPosition() + " selected by player " + model.getCurrentPlayer());
         }
     }
 
-    private boolean moveSelectedPiece(int col, int row) {
+    private void updateIndices(Position position, int col, int row, Node node) {
+        position.getColumnProperty().set(col);
+        position.getRowProperty().set(row);
+        GridPane.setConstraints(node, col, row);
+    }
+
+    private boolean moveSelectedPiece(int col, int row, Node node) {
         ChessPiece piece = model.getSelectedPiece();
         if (piece == null) return false;
 
@@ -80,9 +79,8 @@ public class GameController {
         ChessPiece opponentPiece = model.getChessPieces().getPiece(target);
 
         if (moves.contains(target)) {
-            piece.getPosition().getColumnProperty().set(col);
-            piece.getPosition().getRowProperty().set(row);
             System.out.println("moving " + piece + " to " + target);
+            updateIndices(piece.getPosition(), col, row, node);
             if (opponentPiece != null)
                 takePiece(opponentPiece);
             return true;
@@ -95,6 +93,7 @@ public class GameController {
         if (taken != null) {
             model.getChessPieces().remove(taken);
             model.getPromotablePieces().add(taken);
+
             System.out.println(model.getCurrentPlayer() + "'s " + taken + " was taken");
         }
     }
@@ -105,10 +104,10 @@ public class GameController {
     }
 
     // highlight selected piece in the view
-
-    public Region buildView() {
-        return view.build();
-    }
+    // get allowed moves of this chessPiece with piece.getPossibleMoves()
+    // 2.b else if model.getSelectedPiece() == the piece that is clicked
+    // call model.validateMove()
+    // 3. move piece
 
     /**
      * set all possible moves for the next player
@@ -116,7 +115,7 @@ public class GameController {
      */
     private void updateMoves() {
         ChessPieceList currentPieces = model.getChessPieces();
-        var currentKing = currentPieces.findPieces(King.class, model.getCurrentPlayer()).getFirst();
+        ChessPiece currentKing = currentPieces.findPieces(King.class, model.getCurrentPlayer()).getFirst();
 
         // temporarily remove king from list, so opponent pieces cover fields behind it
         // see edge case GameControllerTest.test1()
@@ -147,7 +146,6 @@ public class GameController {
     /**
      * calculate positions where the check can be countered
      * see if the current player can reach any of them
-     *
      * @param kingCheckedFrom a list of positions where attackers of the king are
      */
     private void tryToBlockCheck(ChessPieceList currentPlayersPieces, MoveList kingCheckedFrom) {
@@ -248,5 +246,57 @@ public class GameController {
         updateMoves();
         handleCheck();
         handleDraw();
+    }
+
+
+
+    // Umgang mit Klick auf Figut
+
+    public void onSquareClicked(Position pos) {
+        ChessPiece clicked = model.getChessPieces().getPiece(pos);
+        ChessPiece selected = model.getSelectedPiece();
+
+        // Keine Auswahl → eigene Figur auswählen
+        if (selected == null) {
+            if (clicked != null && clicked.getColor() == model.getCurrentPlayer()) {
+                model.selectPiece(clicked);
+                updateMoves();
+
+                // Nur zum testen eingefügt, muss dann wieder gelöscht werden
+                System.out.println("Figur ausgewählt: " + clicked.getClass().getSimpleName() + " auf " + clicked.getPosition());
+                System.out.println("Mögliche Züge: " + clicked.getPossibleMoves());
+            }
+            view.redraw();
+            return;
+        }
+
+        // Eigene Figur → Auswahl wechseln
+        if (clicked != null && clicked.getColor() == model.getCurrentPlayer()) {
+            model.selectPiece(clicked);
+            updateMoves();
+            view.redraw();
+            return;
+        }
+
+        // Nur zum testen eingefügt, muss dann wieder gelöscht werden
+        System.out.println("Versuche zu bewegen nach: " + pos);
+        System.out.println("Selected hat Züge: " + selected.getPossibleMoves());
+        System.out.println("Enthält Ziel? " + selected.getPossibleMoves().contains(pos));
+
+        // Bewegung
+        if (selected.getPossibleMoves().contains(pos)) {
+            System.out.println("BEWEGUNG WIRD AUSGEFÜHRT!");
+
+            if (clicked != null) {
+                model.getChessPieces().remove(clicked);
+            }
+
+            selected.moveTo(pos);
+            model.selectPiece((ChessPiece) null);
+            model.changePlayer();
+            lookForGameOver();
+        }
+
+        view.redraw();
     }
 }
