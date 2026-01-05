@@ -54,24 +54,32 @@ public class GameView implements Builder<Region> {
         drawPieces();
     }
 
-    public void addHighlight(int col, int row) {
-        Node pieceView = board.getChildren()
-                .stream().filter(node -> GridPane.getColumnIndex(node) == col && GridPane.getRowIndex(node) == row)
-                .filter(node -> node.getClass() == ImageView.class).toList().getFirst();
+    public GridPane getBoard() {
+        return board;
+    }
 
-        pieceView.getStyleClass().add("selected-piece");
+    public void addHighlight(int col, int row) {
+        ImageView pieceView = getPieceView(col, row);
+
+        if (pieceView != null)
+            pieceView.getStyleClass().add("selected-piece");
     }
 
     public void removeHighlight(ChessPiece piece) {
         if (piece != null) {
-            int col = piece.getPosition().getColumn();
-            int row = piece.getPosition().getRow();
-            Node pieceView = board.getChildren()
-                    .stream().filter(node -> GridPane.getColumnIndex(node) == col && GridPane.getRowIndex(node) == row)
-                    .filter(node -> node.getClass() == ImageView.class).toList().getFirst();
-
-            pieceView.getStyleClass().removeIf(name -> name.equals("selected-piece"));
+            ImageView pieceView = getPieceView(piece.getPosition().getColumn(), piece.getPosition().getRow());
+            if (pieceView != null)
+                pieceView.getStyleClass().removeIf(name -> name.equals("selected-piece"));
         }
+    }
+
+    public ImageView getPieceView(int col, int row) {
+        List<Node> pieceView = board.getChildren()
+                .stream().filter(node -> GridPane.getColumnIndex(node) == col && GridPane.getRowIndex(node) == row)
+                .filter(node -> node.getClass() == ImageView.class).toList();
+        if (pieceView.isEmpty())
+            return null;
+        return (ImageView) pieceView.getFirst();
     }
 
     public List<Node> getPieceViews() {

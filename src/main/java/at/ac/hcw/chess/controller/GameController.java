@@ -8,8 +8,11 @@ import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
 import at.ac.hcw.chess.view.GameView;
+import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 
@@ -47,9 +50,8 @@ public class GameController {
 
         selectPiece(col, row);
         if (moveSelectedPiece(col, row, node)) {
-            lookForGameOver();
             changePlayer();
-            view.redraw();
+            lookForGameOver();
         }
     }
 
@@ -65,9 +67,11 @@ public class GameController {
     }
 
     private void updateIndices(Position position, int col, int row, Node node) {
+        ImageView pieceView = view.getPieceView(position.getColumn(), position.getRow());
         position.getColumnProperty().set(col);
         position.getRowProperty().set(row);
-        GridPane.setConstraints(node, col, row);
+        GridPane.setConstraints(pieceView, col, row);
+        view.getBoard().requestLayout();
     }
 
     private boolean moveSelectedPiece(int col, int row, Node node) {
@@ -75,6 +79,7 @@ public class GameController {
         if (piece == null) return false;
 
         MoveList moves = piece.getPossibleMoves();
+
         Position target = new Position(col, row);
         ChessPiece opponentPiece = model.getChessPieces().getPiece(target);
 
@@ -100,14 +105,9 @@ public class GameController {
 
     private void changePlayer() {
         model.changePlayer();
+        view.removeHighlight(model.getSelectedPiece());
         System.out.println("next to move: " + model.getCurrentPlayer());
     }
-
-    // highlight selected piece in the view
-    // get allowed moves of this chessPiece with piece.getPossibleMoves()
-    // 2.b else if model.getSelectedPiece() == the piece that is clicked
-    // call model.validateMove()
-    // 3. move piece
 
     /**
      * set all possible moves for the next player
@@ -213,15 +213,22 @@ public class GameController {
      */
     private void emitCheckmateEvent() {
         Color winner = (model.getCurrentPlayer() == Color.WHITE) ? Color.BLACK : Color.WHITE;
-        System.out.println(winner.name() + " has beaten " + model.getCurrentPlayer().name() + " by checkmate!");
-        System.out.println(model);
-
+        showResult("Checkmate!", winner.name() + " has beaten " + model.getCurrentPlayer().name() + " by checkmate!");
     }
 
     private void emitDrawEvent() {
-        System.out.println("The game is a draw!");
-        System.out.println(model);
+        showResult("The game is a draw!", (model.getCurrentPlayer() + " has no more moves left!"));
+    }
 
+    private void showResult(String title, String message) {
+        view.getBoard().setDisable(true);
+        System.out.println(model);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+        Platform.exit();
     }
 
     private void handleDraw() {
