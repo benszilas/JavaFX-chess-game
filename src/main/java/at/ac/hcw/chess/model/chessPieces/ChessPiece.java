@@ -60,6 +60,10 @@ public abstract class ChessPiece {
         return possibleMoves;
     }
 
+    public void moveTo(Position newPosition) {
+        this.position = newPosition;
+    }
+
     /**
      * check possible moves in a diagonal range
      * <p><b>can't</b> move through pieces</p>
@@ -169,6 +173,7 @@ public abstract class ChessPiece {
      */
     public void setPossibleMoves(ChessPieceList piecesOnBoard) {
         this.possibleMoves = new MoveList();
+        System.out.println("setPossibleMoves aufgerufen für " + this.getClass().getSimpleName() + " auf " + this.position);
     }
 
     public MoveList getPossibleMoves() {
@@ -183,7 +188,7 @@ public abstract class ChessPiece {
 
     public void setLegalMoves(ChessPieceList piecesOnBoard) {
         this.piecesOnBoard = piecesOnBoard;
-        setPossibleMoves(piecesOnBoard);
+        //setPossibleMoves(piecesOnBoard);
         preventSelfCheck();
     }
 
@@ -191,3 +196,5 @@ public abstract class ChessPiece {
         return this.possibleMoves.contains(position);
     }
 }
+
+

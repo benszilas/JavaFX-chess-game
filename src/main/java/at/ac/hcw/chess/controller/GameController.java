@@ -16,13 +16,19 @@ public class GameController {
 
     public GameController() {
         model = new GameModel();
-        view = new GameView(model);
+        view = new GameView(model, this);
+        lookForGameOver();
     }
 
     public GameController(GameModel model) {
         this.model = model;
-        view = new GameView(model);
+        view = new GameView(model, this);
+        lookForGameOver();
     }
+    public Region getView() {
+        return view.build();
+    }
+
 
     // hook on click:
     // 1. validate player
@@ -33,17 +39,20 @@ public class GameController {
     // call model.validateMove()
     // 3. move piece
 
-    public Region getView() {
-        return view.build();
-    }
+
 
     /**
      * set all possible moves for the next player
      * set all legal (no self-check) moves for the current player
      */
+
+    /*
+    Move Calculatio
+    */
+/*
     private void updateMoves() {
         ChessPieceList currentPieces = model.getChessPieces();
-        var currentKing = currentPieces.findPieces(King.class, model.getCurrentPlayer()).getFirst();
+        ChessPiece currentKing = currentPieces.findPieces(King.class, model.getCurrentPlayer()).getFirst();
 
         // temporarily remove king from list, so opponent pieces cover fields behind it
         // see edge case GameControllerTest.test1()
@@ -54,6 +63,20 @@ public class GameController {
         });
 
         currentPieces.add(currentKing);
+        currentPieces.forEach(chessPiece -> {
+            if (chessPiece.getColor() == model.getCurrentPlayer())
+                chessPiece.setLegalMoves(currentPieces);
+        });
+    }
+*/
+
+    private void updateMoves() {
+        ChessPieceList currentPieces = model.getChessPieces();
+
+        // ALLE Figuren berechnen erstmal ihre möglichen Züge
+        currentPieces.forEach(chessPiece -> chessPiece.setPossibleMoves(currentPieces));
+
+        // Dann für den AKTUELLEN Spieler die legalen Züge filtern
         currentPieces.forEach(chessPiece -> {
             if (chessPiece.getColor() == model.getCurrentPlayer())
                 chessPiece.setLegalMoves(currentPieces);
@@ -174,5 +197,57 @@ public class GameController {
         updateMoves();
         handleCheck();
         handleDraw();
+    }
+
+
+
+    // Umgang mit Klick auf Figut
+
+    public void onSquareClicked(Position pos) {
+        ChessPiece clicked = model.getChessPieces().getPiece(pos);
+        ChessPiece selected = model.getSelectedPiece();
+
+        // Keine Auswahl → eigene Figur auswählen
+        if (selected == null) {
+            if (clicked != null && clicked.getColor() == model.getCurrentPlayer()) {
+                model.selectPiece(clicked);
+                updateMoves();
+
+                // Nur zum testen eingefügt, muss dann wieder gelöscht werden
+                System.out.println("Figur ausgewählt: " + clicked.getClass().getSimpleName() + " auf " + clicked.getPosition());
+                System.out.println("Mögliche Züge: " + clicked.getPossibleMoves());
+            }
+            view.redraw();
+            return;
+        }
+
+        // Eigene Figur → Auswahl wechseln
+        if (clicked != null && clicked.getColor() == model.getCurrentPlayer()) {
+            model.selectPiece(clicked);
+            updateMoves();
+            view.redraw();
+            return;
+        }
+
+        // Nur zum testen eingefügt, muss dann wieder gelöscht werden
+        System.out.println("Versuche zu bewegen nach: " + pos);
+        System.out.println("Selected hat Züge: " + selected.getPossibleMoves());
+        System.out.println("Enthält Ziel? " + selected.getPossibleMoves().contains(pos));
+
+        // Bewegung
+        if (selected.getPossibleMoves().contains(pos)) {
+            System.out.println("BEWEGUNG WIRD AUSGEFÜHRT!");
+
+            if (clicked != null) {
+                model.getChessPieces().remove(clicked);
+            }
+
+            selected.moveTo(pos);
+            model.selectPiece((ChessPiece) null);
+            model.changePlayer();
+            lookForGameOver();
+        }
+
+        view.redraw();
     }
 }
