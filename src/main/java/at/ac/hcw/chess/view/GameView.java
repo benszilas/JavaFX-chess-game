@@ -4,6 +4,7 @@ import at.ac.hcw.chess.controller.GameController;
 import at.ac.hcw.chess.model.GameModel;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
 import at.ac.hcw.chess.model.utils.Color;
+import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -59,28 +60,44 @@ public class GameView implements Builder<Region> {
         return board;
     }
 
-    public void addHighlight(int col, int row) {
-        ImageView pieceView = getPieceView(col, row);
-
-        if (pieceView != null)
-            pieceView.getStyleClass().add("selected-piece");
+    public void addHighlight(ChessPiece piece) {
+        if (piece != null) {
+            Node pieceView = chessBoardChildNode(piece.getPosition(), ImageView.class);
+            if (pieceView != null)
+                pieceView.getStyleClass().add("selected-piece");
+        }
     }
 
     public void removeHighlight(ChessPiece piece) {
         if (piece != null) {
-            ImageView pieceView = getPieceView(piece.getPosition().getColumn(), piece.getPosition().getRow());
+            Node pieceView = chessBoardChildNode(piece.getPosition(), ImageView.class);
             if (pieceView != null)
                 pieceView.getStyleClass().removeIf(name -> name.equals("selected-piece"));
         }
     }
 
-    public ImageView getPieceView(int col, int row) {
-        List<Node> pieceView = board.getChildren()
-                .stream().filter(node -> GridPane.getColumnIndex(node) == col && GridPane.getRowIndex(node) == row)
-                .filter(node -> node.getClass() == ImageView.class).toList();
-        if (pieceView.isEmpty())
-            return null;
-        return (ImageView) pieceView.getFirst();
+    public Node chessBoardChildNode(Position position, Class<?> wantedClass) {
+        for (Node node : board.getChildren()) {
+            if (!wantedClass.isInstance(node)) continue;
+            int c = GridPane.getColumnIndex(node) == null ? 0 : GridPane.getColumnIndex(node);
+            int r = GridPane.getRowIndex(node) == null ? 0 : GridPane.getRowIndex(node);
+
+            if (c == position.getColumn() && r == position.getRow())
+                return node;
+        }
+        return null;
+    }
+
+    public void addHighlight(MoveList moves) {
+        for (Position move : moves) {
+            chessBoardChildNode(move, StackPane.class).getStyleClass().add("square-possible-move");
+        }
+    }
+
+    public void removeHighlight(MoveList moves) {
+        for (Position move : moves) {
+            chessBoardChildNode(move, StackPane.class).getStyleClass().removeIf(name -> name.equals("square-possible-move"));
+        }
     }
 
     public List<Node> getPieceViews() {
@@ -99,11 +116,9 @@ public class GameView implements Builder<Region> {
 
                 if (row == 0 && col > 0 && col < UI_SIZE - 1) {
                     node = new Label(String.valueOf((char) ('A' + col - 1)));
-                }
-                else if (col == 0 && row > 0 && row < UI_SIZE - 1) {
+                } else if (col == 0 && row > 0 && row < UI_SIZE - 1) {
                     node = new Label(String.valueOf(row));
-                }
-                else if (row > 0 && row < UI_SIZE - 1 && col < UI_SIZE - 1) {
+                } else if (row > 0 && row < UI_SIZE - 1 && col < UI_SIZE - 1) {
                     StackPane square = new StackPane();
                     try {
                         Position position = new Position(col, row);
@@ -117,8 +132,7 @@ public class GameView implements Builder<Region> {
                     );
 
                     node = square;
-                }
-                else {
+                } else {
                     node = new Pane();
                 }
 

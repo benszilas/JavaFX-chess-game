@@ -59,53 +59,61 @@ public class GameController {
         ChessPiece piece = model.getChessPieces().getPiece(col, row);
 
         if (piece != null && piece.getColor() == model.getCurrentPlayer()) {
-            view.removeHighlight(model.getSelectedPiece());
-            view.addHighlight(col, row);
+            removeHighlight(model.getSelectedPiece());
+            addHighlight(piece);
             model.selectPiece(piece);
             System.out.println(piece + " at " + piece.getPosition() + " selected by player " + model.getCurrentPlayer());
         }
     }
 
+    private void removeHighlight(ChessPiece piece) {
+        if (piece == null) return;
+        view.removeHighlight(piece);
+        view.removeHighlight(piece.getPossibleMoves());
+    }
+
+    private void addHighlight(ChessPiece piece) {
+        if (piece == null) return;
+        view.addHighlight(piece);
+        view.addHighlight(piece.getPossibleMoves());
+    }
+
     private void updateIndices(Position position, int col, int row, Node node) {
-        ImageView pieceView = view.getPieceView(position.getColumn(), position.getRow());
+        ImageView pieceView = (ImageView) view.chessBoardChildNode(position, ImageView.class);
         position.getColumnProperty().set(col);
         position.getRowProperty().set(row);
         GridPane.setConstraints(pieceView, col, row);
-        view.getBoard().requestLayout();
     }
 
     private boolean moveSelectedPiece(int col, int row, Node node) {
         ChessPiece piece = model.getSelectedPiece();
         if (piece == null) return false;
 
-        MoveList moves = piece.getPossibleMoves();
-
         Position target = new Position(col, row);
-        ChessPiece opponentPiece = model.getChessPieces().getPiece(target);
 
-        if (moves.contains(target)) {
+        if (piece.getPossibleMoves().contains(target)) {
             System.out.println("moving " + piece + " to " + target);
+            take(model.getChessPieces().getPiece(target));
             updateIndices(piece.getPosition(), col, row, node);
-            if (opponentPiece != null)
-                takePiece(opponentPiece);
             return true;
         }
         System.out.println("can't move " + piece + " to " + target);
         return false;
     }
 
-    private void takePiece(ChessPiece taken) {
-        if (taken != null) {
-            model.getChessPieces().remove(taken);
-            model.getPromotablePieces().add(taken);
-
-            System.out.println(model.getCurrentPlayer() + "'s " + taken + " was taken");
+    private void take(ChessPiece target) {
+        if (target != null) {
+            model.getChessPieces().remove(target);
+            model.getPromotablePieces().add(target);
+            view.getBoard().getChildren().remove(view.chessBoardChildNode(target.getPosition(), ImageView.class));
+            System.out.println(model.getCurrentPlayer() + "'s " + target + " was taken");
         }
     }
 
     private void changePlayer() {
         model.changePlayer();
-        view.removeHighlight(model.getSelectedPiece());
+        removeHighlight(model.getSelectedPiece());
+        model.selectPiece((ChessPiece) null);
         System.out.println("next to move: " + model.getCurrentPlayer());
     }
 
