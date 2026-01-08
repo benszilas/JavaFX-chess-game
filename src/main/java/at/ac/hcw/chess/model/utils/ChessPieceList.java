@@ -34,7 +34,7 @@ public class ChessPieceList extends ArrayList<ChessPiece> {
     /**
      * find pieces by class and color
      * @param pieceClass Class to be found such as King.class
-     * @param color
+     * @param color the color of the pieces to find
      * @return a list of references to the found pieces. if nothing found, an empty list
      */
     public ChessPieceList findPieces(Class<?> pieceClass, Color color) {

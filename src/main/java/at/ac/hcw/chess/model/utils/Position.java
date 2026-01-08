@@ -89,9 +89,21 @@ public class Position {
 
     @Override
     public boolean equals(Object obj) {
-        return obj.getClass() == this.getClass()
-                && ((Position) obj).getColumn() == this.getColumn()
-                && ((Position) obj).getRow() == this.getRow();
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Position other)) {
+            return false;
+        }
+        return other.getColumn() == this.getColumn()
+                && other.getRow() == this.getRow();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Integer.hashCode(getColumn());
+        result = (MAX + 1) * result + Integer.hashCode(getRow());
+        return result;
     }
 
     @Override

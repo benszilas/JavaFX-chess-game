@@ -50,6 +50,7 @@ public class GameView implements Builder<Region> {
 
     public void redraw() {
         board.getChildren().clear();
+        pieceViews.clear();
         drawBoard();
         drawPieces();
     }
@@ -104,7 +105,11 @@ public class GameView implements Builder<Region> {
                 }
                 else if (row > 0 && row < UI_SIZE - 1 && col < UI_SIZE - 1) {
                     StackPane square = new StackPane();
-                    Position position = new Position(col, row);
+                    try {
+                        Position position = new Position(col, row);
+                    } catch (IndexOutOfBoundsException e) {
+                        throw new RuntimeException("Position with column " + col + " and row " + row + " is out of bounds: " + e);
+                    }
                     square.getStyleClass().add((row + col) % 2 == 0 ? "light-square" : "dark-square");
 
                     square.setOnMouseClicked(e ->
