@@ -171,7 +171,8 @@ public class GameController {
         }
 
         currentPlayersPieces.forEach(chessPiece -> {
-            chessPiece.getPossibleMoves().removeIf(move -> !kingCheckedFrom.contains(move));
+            if (chessPiece.getClass() != King.class)
+                chessPiece.getPossibleMoves().removeIf(move -> !kingCheckedFrom.contains(move));
         });
     }
 

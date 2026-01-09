@@ -91,12 +91,18 @@ public class GameView implements Builder<Region> {
     public void addHighlight(MoveList moves) {
         for (Position move : moves) {
             chessBoardChildNode(move, StackPane.class).getStyleClass().add("square-possible-move");
+            var opponentPieceView = chessBoardChildNode(move, ImageView.class);
+            if (opponentPieceView != null)
+                opponentPieceView.getStyleClass().add("opponent-piece");
         }
     }
 
     public void removeHighlight(MoveList moves) {
         for (Position move : moves) {
             chessBoardChildNode(move, StackPane.class).getStyleClass().removeIf(name -> name.equals("square-possible-move"));
+            var opponentPieceView = chessBoardChildNode(move, ImageView.class);
+            if (opponentPieceView != null)
+                opponentPieceView.getStyleClass().removeIf(name -> name.equals("opponent-piece"));
         }
     }
 

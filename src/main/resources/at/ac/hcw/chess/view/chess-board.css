@@ -26,19 +26,16 @@
     -fx-stroke-width: 3;
 }
 
-/* Selected square highlighting */
 .square-selected {
     -fx-stroke: #ffff00;
     -fx-stroke-width: 3;
 }
 
-/* Possible move highlighting */
 .square-possible-move {
-    -fx-stroke: #00ff00;
-    -fx-stroke-width: 3;
+    -fx-effect: innershadow(one-pass-box, mediumseagreen, 10, 1, 0, 0);
+    -fx-cursor: hand;
 }
 
-/* Last move highlighting */
 .square-last-move {
     -fx-stroke: #ff6600;
     -fx-stroke-width: 3;
@@ -46,4 +43,9 @@
 
 .selected-piece {
     -fx-effect: dropshadow(gaussian, gold, 20, 0.6, 0, 0);
+}
+
+.opponent-piece {
+    -fx-effect: dropshadow(gaussian, coral, 20, 0.4, 0, 0);
+    -fx-cursor: hand;
 }
