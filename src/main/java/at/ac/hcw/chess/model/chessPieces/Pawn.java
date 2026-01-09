@@ -7,17 +7,17 @@ import at.ac.hcw.chess.model.utils.Position;
 
 public class Pawn extends ChessPiece {
     private final int targetRank;
+    private final int direction;
 
     public Pawn(Position position, Color color) {
         super(position, color);
         targetRank = (color == Color.WHITE) ? 8 : 1;
+        direction = (this.color == Color.WHITE) ? 1 : -1;
     }
 
     @Override
     public void setPossibleMoves(ChessPieceList piecesOnBoard) {
         this.possibleMoves = new MoveList();
-
-        int direction = (this.color == Color.WHITE) ? 1 : -1;
 
         try {
             Position oneForward = new Position(position.getColumn(), position.getRow() + direction);
@@ -31,23 +31,33 @@ public class Pawn extends ChessPiece {
                     }
                 }
             }
-        } catch (IndexOutOfBoundsException ignored) {}
+        } catch (IndexOutOfBoundsException ignored) {
+        }
 
-        try {
-            Position diagLeft = new Position(position.getColumn() - 1, position.getRow() + direction);
-            ChessPiece target = piecesOnBoard.getPiece(diagLeft);
-            if (target != null && target.getColor() != this.color) {
-                possibleMoves.add(diagLeft);
+        for (int side : new int[]{1, -1}) {
+            try {
+                Position diagonal = new Position(position.getColumn() + side, position.getRow() + direction);
+                possibleMoves.add(diagonal);
+            } catch (IndexOutOfBoundsException ignored) {
             }
-        } catch (IndexOutOfBoundsException ignored) {}
+        }
+    }
 
-        try {
-            Position diagRight = new Position(position.getColumn() + 1, position.getRow() + direction);
-            ChessPiece target = piecesOnBoard.getPiece(diagRight);
-            if (target != null && target.getColor() != this.color) {
-                possibleMoves.add(diagRight);
+    @Override
+    public void setLegalMoves(ChessPieceList pieceList) {
+        super.setLegalMoves(pieceList);
+
+        for (int side : new int[]{1, -1}) {
+            try {
+                Position diagonalTake = new Position(position.getColumn() + side, position.getRow() + direction);
+                ChessPiece target = piecesOnBoard.getPiece(diagonalTake);
+
+                if (target == null || target.getColor() == this.color) {
+                    possibleMoves.remove(diagonalTake);
+                }
+            } catch (IndexOutOfBoundsException ignored) {
             }
-        } catch (IndexOutOfBoundsException ignored) {}
+        }
     }
 
     public boolean canPromote() {
