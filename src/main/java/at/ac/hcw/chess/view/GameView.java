@@ -3,6 +3,7 @@ package at.ac.hcw.chess.view;
 import at.ac.hcw.chess.controller.GameController;
 import at.ac.hcw.chess.model.GameModel;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
+import at.ac.hcw.chess.model.utils.CastleEvent;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
@@ -145,6 +146,9 @@ public class GameView implements Builder<Region> {
                 board.add(node, col, row);
             }
         }
+        board.addEventHandler(CastleEvent.CASTLE, e -> {
+            controller.castleRook(e.getOldRookPosition(), e.getNewRookPosition());
+        });
     }
 
     /* =========================

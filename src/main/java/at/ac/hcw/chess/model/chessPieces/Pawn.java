@@ -6,10 +6,11 @@ import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
 
 public class Pawn extends ChessPiece {
-    private int rank = 1;
+    private final int targetRank;
 
     public Pawn(Position position, Color color) {
         super(position, color);
+        targetRank = (color == Color.WHITE) ? 8 : 1;
     }
 
     @Override
@@ -18,16 +19,12 @@ public class Pawn extends ChessPiece {
 
         int direction = (this.color == Color.WHITE) ? 1 : -1;
 
-        // Ein Feld vorwärts
         try {
             Position oneForward = new Position(position.getColumn(), position.getRow() + direction);
             if (piecesOnBoard.getPiece(oneForward) == null) {
                 possibleMoves.add(oneForward);
 
-                // Zwei Felder vorwärts (nur von Startposition)
-                boolean isStartPosition = (this.color == Color.WHITE && position.getRow() == 2) ||
-                        (this.color == Color.BLACK && position.getRow() == 7);
-                if (isStartPosition) {
+                if (!this.hasMoved()) {
                     Position twoForward = new Position(position.getColumn(), position.getRow() + 2 * direction);
                     if (piecesOnBoard.getPiece(twoForward) == null) {
                         possibleMoves.add(twoForward);
@@ -36,7 +33,6 @@ public class Pawn extends ChessPiece {
             }
         } catch (IndexOutOfBoundsException ignored) {}
 
-        // Diagonal schlagen (links)
         try {
             Position diagLeft = new Position(position.getColumn() - 1, position.getRow() + direction);
             ChessPiece target = piecesOnBoard.getPiece(diagLeft);
@@ -45,7 +41,6 @@ public class Pawn extends ChessPiece {
             }
         } catch (IndexOutOfBoundsException ignored) {}
 
-        // Diagonal schlagen (rechts)
         try {
             Position diagRight = new Position(position.getColumn() + 1, position.getRow() + direction);
             ChessPiece target = piecesOnBoard.getPiece(diagRight);
@@ -53,6 +48,10 @@ public class Pawn extends ChessPiece {
                 possibleMoves.add(diagRight);
             }
         } catch (IndexOutOfBoundsException ignored) {}
+    }
+
+    public boolean canPromote() {
+        return position.getRow() == targetRank;
     }
 
     @Override

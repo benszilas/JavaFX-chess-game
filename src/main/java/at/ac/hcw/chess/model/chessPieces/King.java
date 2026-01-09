@@ -1,11 +1,10 @@
 package at.ac.hcw.chess.model.chessPieces;
 
-import at.ac.hcw.chess.model.utils.ChessPieceList;
-import at.ac.hcw.chess.model.utils.Color;
-import at.ac.hcw.chess.model.utils.MoveList;
-import at.ac.hcw.chess.model.utils.Position;
+import at.ac.hcw.chess.model.utils.*;
+import javafx.scene.image.ImageView;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class King extends ChessPiece {
     public King(Position position, Color color) {
@@ -29,11 +28,50 @@ public class King extends ChessPiece {
             for (int col = this.position.getColumn() - 1; col <= this.position.getColumn() + 1; col++) {
                 try {
                     movesToTry.add(new Position(col, row));
-                } catch (IndexOutOfBoundsException ignored) {}
+                } catch (IndexOutOfBoundsException ignored) {
+                }
             }
         }
 
         this.possibleMoves = stepOrJump(piecesOnBoard, movesToTry);
+    }
+
+    /**
+     * check the rules for castling in one specific direction:<br>
+     * - no squares in that direction under attack<br>
+     * - at the end of that direction is a friendly rook that has not moved yet
+     *
+     * @param piecesOnBoard current pieces
+     * @param range         list of moves including the potential friendly rook
+     */
+    public void tryAddCastleMove(ChessPieceList piecesOnBoard, MoveList range) {
+        ChessPiece neighbor = piecesOnBoard.getPiece(range.getLast());
+        Color opponent = (color == Color.WHITE) ? Color.BLACK : Color.WHITE;
+
+        if (!(neighbor instanceof Rook) || neighbor.getColor() == opponent) return;
+        if (this.hasMoved() || neighbor.hasMoved()) return;
+
+        Set<Position> opponentMoves = new LinkedHashSet<>();
+        for (ChessPiece opponentPiece : piecesOnBoard.findPieces(ChessPiece.class, opponent)) {
+            opponentMoves.addAll(opponentPiece.getPossibleMoves());
+        }
+        if (opponentMoves.contains(range.get(0)) || opponentMoves.contains(range.get(1)))
+            return;
+
+        this.possibleMoves.add(range.get(1));
+    }
+
+    @Override
+    public void moveTo(Position newPosition, ImageView pieceView) {
+        int jump = newPosition.getColumn() - position.getColumn();
+        if (Math.abs(jump) > 1) {
+            int rookColumn = (jump > 1) ? Position.MAX : Position.MIN;
+            pieceView.fireEvent(new CastleEvent(
+                    new Position(rookColumn, position.getRow()),
+                    new Position(position.getColumn() + jump / Math.abs(jump), position.getRow()))
+            );
+        }
+        super.moveTo(newPosition, pieceView);
     }
 
     @Override
