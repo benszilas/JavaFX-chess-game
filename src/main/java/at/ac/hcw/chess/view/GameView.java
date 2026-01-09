@@ -2,11 +2,13 @@ package at.ac.hcw.chess.view;
 
 import at.ac.hcw.chess.controller.GameController;
 import at.ac.hcw.chess.model.GameModel;
+import at.ac.hcw.chess.model.chessPieces.Bishop;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
 import at.ac.hcw.chess.model.utils.CastleEvent;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
+import at.ac.hcw.chess.view.chessPieces.BishopIcon;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -157,8 +159,9 @@ public class GameView implements Builder<Region> {
 
     private void drawPieces() {
         for (ChessPiece piece : model.getChessPieces()) {
-            ImageView view = createPieceView(piece);
+            Node view = createPieceView(piece);
             view.setOnMouseClicked(e -> controller.clickChessBoard(e, view));
+            view.getStyleClass().add("chess-piece");
             pieceViews.add(view);
             board.add(view, piece.getPosition().getColumn(), piece.getPosition().getRow());
         }

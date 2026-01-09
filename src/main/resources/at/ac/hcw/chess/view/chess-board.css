@@ -1,10 +1,9 @@
-
 .light-square {
     -fx-background-color: white;
 }
 
 .dark-square {
-    -fx-background-color: black;
+    -fx-background-color: #333333;
 }
 
 .light-square:hover {
@@ -12,7 +11,7 @@
 }
 
 .dark-square:hover {
-    -fx-background-color: #333333;
+    -fx-background-color: darkslategrey;
 }
 
 .square-selected {
@@ -21,7 +20,7 @@
 }
 
 .square-possible-move {
-    -fx-effect: innershadow(one-pass-box, mediumseagreen, 10, 1, 0, 0);
+    -fx-effect: innershadow(gaussian, mediumseagreen, 10, 0.6, 0, 0);
     -fx-cursor: hand;
 }
 
