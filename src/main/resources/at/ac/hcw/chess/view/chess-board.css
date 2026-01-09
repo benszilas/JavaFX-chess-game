@@ -1,29 +1,18 @@
 
-/* Light squares - pure white */
 .light-square {
     -fx-background-color: white;
-    -fx-stroke: #cccccc;
-    -fx-stroke-width: 3;
 }
 
-/* Dark squares - pure black */
 .dark-square {
     -fx-background-color: black;
-    -fx-stroke: #333333;
-    -fx-stroke-width: 3;
 }
 
-/* Hover effects for better user interaction */
 .light-square:hover {
-    -fx-background-color: #f5f5f5;
-    -fx-stroke: #999999;
-    -fx-stroke-width: 3;
+    -fx-background-color: #e0e0e0;
 }
 
 .dark-square:hover {
     -fx-background-color: #333333;
-    -fx-stroke: #666666;
-    -fx-stroke-width: 3;
 }
 
 .square-selected {
