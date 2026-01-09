@@ -78,13 +78,6 @@ public class GameController {
         view.addHighlight(piece.getPossibleMoves());
     }
 
-    private void updateIndices(Position position, int col, int row, Node node) {
-        ImageView pieceView = (ImageView) view.chessBoardChildNode(position, ImageView.class);
-        position.getColumnProperty().set(col);
-        position.getRowProperty().set(row);
-        GridPane.setConstraints(pieceView, col, row);
-    }
-
     private boolean moveSelectedPiece(int col, int row, Node node) {
         ChessPiece piece = model.getSelectedPiece();
         if (piece == null) return false;
@@ -94,7 +87,7 @@ public class GameController {
         if (piece.getPossibleMoves().contains(target)) {
             System.out.println("moving " + piece + " to " + target);
             take(model.getChessPieces().getPiece(target));
-            updateIndices(piece.getPosition(), col, row, node);
+            piece.moveTo(target, (ImageView) view.chessBoardChildNode(piece.getPosition(), ImageView.class));
             return true;
         }
         System.out.println("can't move " + piece + " to " + target);
@@ -140,6 +133,42 @@ public class GameController {
         });
     }
 
+    /**
+     * <b>ASSUME<b/> the current King is <b>NOT<b/> in check<br>
+     * see if the king can castle in either direction.<br>
+     * if yes, add that to the moves.
+     */
+    private void addCastleMoves() {
+        King currentKing = (King) model.getChessPieces().findPieces(King.class, model.getCurrentPlayer()).getFirst();
+        if (currentKing.hasMoved()) return;
+
+        for (int direction : new int[]{-1, 1}) {
+            MoveList range = currentKing.range(model.getChessPieces(), direction, 0);
+            if (range.isEmpty()) continue;
+
+            try {
+                Position last = new Position(range.getLast().getColumn() + direction, currentKing.getPosition().getRow());
+                range.add(last);
+                currentKing.tryAddCastleMove(getModel().getChessPieces(), range);
+            } catch (IndexOutOfBoundsException ignore) {
+            }
+        }
+    }
+
+    public void castleRook(Position oldPosition, Position newPosition) {
+        ImageView rookImage = (ImageView) view.chessBoardChildNode(oldPosition, ImageView.class);
+        var saved = model.getSelectedPiece();
+        model.selectPiece(oldPosition);
+        moveSelectedPiece(newPosition.getColumn(), newPosition.getRow(), rookImage);
+        model.selectPiece(saved);
+    }
+
+    /**
+     * where is the current players king checked from
+     *
+     * @return a MoveList of Positions of checking opponent Pieces<br>
+     * empty MoveList if there is no check
+     */
     private MoveList kingCheckedFrom() {
         MoveList kingCheckedFrom = new MoveList();
         Position king = model.getChessPieces().findPieces(King.class, model.getCurrentPlayer()).getFirst().getPosition();
@@ -154,6 +183,7 @@ public class GameController {
     /**
      * calculate positions where the check can be countered
      * see if the current player can reach any of them
+     *
      * @param kingCheckedFrom a list of positions where attackers of the king are
      */
     private void tryToBlockCheck(ChessPieceList currentPlayersPieces, MoveList kingCheckedFrom) {
@@ -200,6 +230,7 @@ public class GameController {
 
         switch (kingCheckedFrom.size()) {
             case 0:
+                addCastleMoves();
                 return;
             case 1:
                 tryToBlockCheck(currentPlayersPieces, kingCheckedFrom);

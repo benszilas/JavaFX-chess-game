@@ -4,12 +4,15 @@ import at.ac.hcw.chess.model.utils.ChessPieceList;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 
 public abstract class ChessPiece {
     protected Position position;
     protected final Color color;
     protected MoveList possibleMoves;
     protected ChessPieceList piecesOnBoard;
+    protected boolean hasMoved = false;
 
     public ChessPiece(Position position, Color color) {
         this.position = position;
@@ -60,8 +63,14 @@ public abstract class ChessPiece {
         return possibleMoves;
     }
 
-    public void moveTo(Position newPosition) {
+    public void moveTo(Position newPosition, ImageView pieceView) {
+        hasMoved = true;
+        GridPane.setConstraints(pieceView, newPosition.getColumn(), newPosition.getRow());
         this.position = newPosition;
+    }
+
+    public boolean hasMoved() {
+        return hasMoved;
     }
 
     /**

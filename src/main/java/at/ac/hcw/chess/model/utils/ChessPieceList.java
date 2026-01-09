@@ -40,7 +40,7 @@ public class ChessPieceList extends ArrayList<ChessPiece> {
     public ChessPieceList findPieces(Class<?> pieceClass, Color color) {
         var foundPieces = new ChessPieceList();
         for (ChessPiece piece : this) {
-            if (piece.getClass() == pieceClass && piece.getColor() == color)
+            if (pieceClass.isInstance(piece) && piece.getColor() == color)
                 foundPieces.add(piece);
         }
         return foundPieces;
