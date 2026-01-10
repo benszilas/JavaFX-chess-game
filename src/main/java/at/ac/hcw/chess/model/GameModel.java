@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class GameModel {
     private final ChessPieceList chessPieces;
-    private final ChessPieceList promotablePieces;
+    private final ArrayList<ChessPiece> promotablePieces;
     private ChessPiece selectedPiece = null;
     private final ArrayList<MoveRecord> moveHistory;
     private Color currentPlayer;
@@ -44,8 +44,19 @@ public class GameModel {
         return chessPieces;
     }
 
-    public ChessPieceList getPromotablePieces() {
+    public ArrayList<ChessPiece> getPromotablePieces() {
         return promotablePieces;
+    }
+
+    public ChessPieceList currentUniquePromotable() {
+        ChessPieceList promotionList = new ChessPieceList();
+        promotablePieces.forEach(piece -> {
+            if (piece.getColor() == currentPlayer
+                    && promotionList.findPieces(piece.getClass(), piece.getColor()).isEmpty()) {
+                promotionList.addLast(piece);
+            }
+        });
+        return promotionList;
     }
 
     public ChessPiece getSelectedPiece() {

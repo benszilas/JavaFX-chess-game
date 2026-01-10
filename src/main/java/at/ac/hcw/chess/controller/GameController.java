@@ -89,25 +89,25 @@ public class GameController {
             System.out.println("moving " + piece + " to " + target);
             take(model.getChessPieces().getPiece(target));
             piece.moveTo(target, (ImageView) view.chessBoardChildNode(piece.getPosition(), ImageView.class));
-            if (piece instanceof Pawn && ((Pawn) piece).canPromote())
-                node.fireEvent(new PromotionEvent(piece));
             return true;
         }
         System.out.println("can't move " + piece + " to " + target);
         return false;
     }
 
-    public void promote(ChessPiece piece) {
-
-    }
-
-    private void take(ChessPiece target) {
+    public void take(ChessPiece target) {
         if (target != null) {
             model.getChessPieces().remove(target);
-            model.getPromotablePieces().add(target);
+            model.getPromotablePieces().addLast(target);
             view.getBoard().getChildren().remove(view.chessBoardChildNode(target.getPosition(), ImageView.class));
             System.out.println(model.getCurrentPlayer() + "'s " + target + " was taken");
         }
+    }
+
+    public void promote(ChessPiece promoted, ImageView pieceView, Position position) {
+        model.getPromotablePieces().remove(promoted);
+        promoted.moveTo(position, pieceView);
+        model.getChessPieces().add(promoted);
     }
 
     private void changePlayer() {
@@ -136,10 +136,13 @@ public class GameController {
 
     /**
      * see if after any legal move, the king would be in check<br>
+     * the list of pieces is modified and reset in place:<br>
      * - remove opponent pieces attacked by the current king<br>
-     * - remove current king<br>
+     * - remove current king<br><br>
+     * algorithm:<br>
      * - get all legal moves of the remaining opponents<br>
-     * - this new list will include defended opponents and covered checks
+     * - this new list will include defended opponents and covered checks<br>
+     * - prevent the current king from moving to any additional attacked squares
      *
      * @param king the current king
      */
