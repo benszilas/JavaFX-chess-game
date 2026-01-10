@@ -46,7 +46,8 @@ public class GameController {
         return view;
     }
 
-    public void clickChessBoard(Event mouseEvent, Node node) {
+    public void clickChessBoard(Event mouseEvent) {
+        Node node = (Node) mouseEvent.getTarget();
         int col = GridPane.getColumnIndex(node);
         int row = GridPane.getRowIndex(node);
 

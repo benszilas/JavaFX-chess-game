@@ -134,9 +134,7 @@ public class GameView implements Builder<Region> {
                     }
                     square.getStyleClass().add((row + col) % 2 == 0 ? "light-square" : "dark-square");
 
-                    square.setOnMouseClicked(e ->
-                            controller.clickChessBoard(e, square)
-                    );
+                    square.setOnMouseClicked(controller::clickChessBoard);
 
                     node = square;
                 } else {
@@ -158,7 +156,7 @@ public class GameView implements Builder<Region> {
     private void drawPieces() {
         for (ChessPiece piece : model.getChessPieces()) {
             Node view = createPieceView(piece);
-            view.setOnMouseClicked(e -> controller.clickChessBoard(e, view));
+            view.setOnMouseClicked(controller::clickChessBoard);
             view.getStyleClass().add("chess-piece");
             pieceViews.add(view);
             board.add(view, piece.getPosition().getColumn(), piece.getPosition().getRow());
