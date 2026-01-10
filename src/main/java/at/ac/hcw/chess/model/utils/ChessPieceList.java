@@ -52,11 +52,25 @@ public class ChessPieceList extends ArrayList<ChessPiece> {
      */
     @Override
     public boolean add(ChessPiece piece) {
+        if (piece == null)
+            return false;
+
         ChessPiece duplicate = this.getPiece(piece.getPosition());
         if (duplicate == null){
             super.add(piece);
             return true;
         }
         return false;
+    }
+
+    /**
+     * remove the piece at the specified position, if exists
+     * @param position of the piece to get removed
+     * @return the removed piece if successful, or null
+     */
+    public ChessPiece pop(ChessPiece piece) {
+        ChessPiece removed = piece;
+        remove(piece);
+        return piece;
     }
 }

@@ -16,6 +16,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 
+import java.util.Objects;
+
 public class GameController {
     private final GameModel model;
     private final GameView view;
@@ -118,19 +120,48 @@ public class GameController {
         ChessPieceList currentPieces = model.getChessPieces();
         ChessPiece currentKing = currentPieces.findPieces(King.class, model.getCurrentPlayer()).getFirst();
 
-        // temporarily remove king from list, so opponent pieces cover fields behind it
-        // see edge case GameControllerTest.test1()
-        currentPieces.remove(currentKing);
+        currentPieces.forEach(chessPiece -> {
+            if (chessPiece.getColor() != model.getCurrentPlayer())
+                chessPiece.setPossibleMoves(currentPieces);
+            else if (!chessPiece.equals(currentKing))
+                chessPiece.setLegalMoves(currentPieces);
+        });
+        preventSelfCheck(currentKing);
+    }
+
+    /**
+     * see if after any legal move, the king would be in check<br>
+     * - remove opponent pieces attacked by the current king<br>
+     * - remove current king<br>
+     * - get all legal moves of the remaining opponents<br>
+     * - this new list will include defended opponents and covered checks
+     *
+     * @param king the current king
+     */
+    private void preventSelfCheck(ChessPiece king) {
+        ChessPieceList currentPieces = model.getChessPieces();
+        ChessPieceList removedPieces = new ChessPieceList();
+
+        king.setLegalMoves(currentPieces);
+
+        king.getPossibleMoves().forEach(move -> {
+            ChessPiece opponentPiece = currentPieces.getPiece(move);
+            currentPieces.remove(opponentPiece);
+            removedPieces.add(opponentPiece);
+        });
+        currentPieces.remove(king);
+        removedPieces.add(king);
+
         currentPieces.forEach(chessPiece -> {
             if (chessPiece.getColor() != model.getCurrentPlayer())
                 chessPiece.setPossibleMoves(currentPieces);
         });
 
-        currentPieces.add(currentKing);
-        currentPieces.forEach(chessPiece -> {
-            if (chessPiece.getColor() == model.getCurrentPlayer())
-                chessPiece.setLegalMoves(currentPieces);
-        });
+        ChessPiece doubleKing = new King(king.getPosition(), king.getColor());
+        doubleKing.setLegalMoves(currentPieces);
+        king.getPossibleMoves().removeIf(move -> !doubleKing.getPossibleMoves().contains(move));
+
+        currentPieces.addAll(removedPieces);
     }
 
     /**

@@ -2,13 +2,11 @@ package at.ac.hcw.chess.view;
 
 import at.ac.hcw.chess.controller.GameController;
 import at.ac.hcw.chess.model.GameModel;
-import at.ac.hcw.chess.model.chessPieces.Bishop;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
 import at.ac.hcw.chess.model.utils.CastleEvent;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
-import at.ac.hcw.chess.view.chessPieces.BishopIcon;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -23,7 +21,7 @@ import java.util.Objects;
 public class GameView implements Builder<Region> {
 
     private static final int BOARD_SIZE = 8;
-    private static final int UI_SIZE = 10;
+    private static final int UI_SIZE = BOARD_SIZE + 2;
 
     private final GameModel model;
     private final GameController controller;
