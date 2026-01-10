@@ -43,6 +43,20 @@ public class Pawn extends ChessPiece {
         }
     }
 
+    /**
+     * handles edge case when the king can not move in front of an opponent pawn<br>
+     * king should be able to move in front of opponent pawns, because they can only take diagonally
+     */
+    public void removeStraightMoves() {
+        try {
+            Position firstMove = new Position(position.getColumn(), position.getRow() + direction);
+            possibleMoves.remove(firstMove);
+            Position secondMove = new Position(position.getColumn(), position.getRow() + direction * 2);
+            possibleMoves.remove(secondMove);
+        } catch (IndexOutOfBoundsException ignored) {
+        }
+    }
+
     @Override
     public void setLegalMoves(ChessPieceList pieceList) {
         super.setLegalMoves(pieceList);

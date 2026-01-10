@@ -12,6 +12,7 @@ public class GameModel {
     private ChessPiece selectedPiece = null;
     private final ArrayList<MoveRecord> moveHistory;
     private Color currentPlayer;
+    private Color nextPlayer;
 
     public GameModel() {
         this.chessPieces = PopulateBoard.classicGameBoard();
@@ -21,6 +22,7 @@ public class GameModel {
         this.promotablePieces.add(new Queen(new Position(8,8), Color.WHITE));
 
         this.currentPlayer = Color.WHITE;
+        this.nextPlayer = Color.BLACK;
 
         this.moveHistory = new ArrayList<MoveRecord>();
     }
@@ -66,11 +68,19 @@ public class GameModel {
         return currentPlayer;
     }
 
+    public Color getNextPlayer() {
+        return nextPlayer;
+    }
+
     public void changePlayer() {
-        if (this.currentPlayer == Color.BLACK)
-            this.currentPlayer = Color.WHITE;
-        else
-            this.currentPlayer = Color.BLACK;
+        if (currentPlayer == Color.BLACK) {
+            currentPlayer = Color.WHITE;
+            nextPlayer = Color.BLACK;
+        }
+        else {
+            currentPlayer = Color.BLACK;
+            nextPlayer = Color.WHITE;
+        }
     }
 
     private ChessPiece[][] _2DBoard() {

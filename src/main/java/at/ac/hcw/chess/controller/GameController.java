@@ -126,7 +126,7 @@ public class GameController {
         ChessPiece currentKing = currentPieces.findPieces(King.class, model.getCurrentPlayer()).getFirst();
 
         currentPieces.forEach(chessPiece -> {
-            if (chessPiece.getColor() != model.getCurrentPlayer())
+            if (chessPiece.getColor() == model.getNextPlayer())
                 chessPiece.setPossibleMoves(currentPieces);
             else if (!chessPiece.equals(currentKing))
                 chessPiece.setLegalMoves(currentPieces);
@@ -146,6 +146,12 @@ public class GameController {
     private void preventSelfCheck(ChessPiece king) {
         ChessPieceList currentPieces = model.getChessPieces();
         ChessPieceList removedPieces = new ChessPieceList();
+
+        ChessPieceList opponentPawns = currentPieces.findPieces(Pawn.class, model.getNextPlayer());
+        opponentPawns.forEach(piece -> {
+            Pawn pawn = (Pawn) piece;
+            pawn.removeStraightMoves();
+        });
 
         king.setLegalMoves(currentPieces);
 
