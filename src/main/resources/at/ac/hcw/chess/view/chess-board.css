@@ -1,0 +1,39 @@
+.light-square {
+    -fx-background-color: white;
+}
+
+.dark-square {
+    -fx-background-color: #333333;
+}
+
+.light-square:hover {
+    -fx-background-color: #e0e0e0;
+}
+
+.dark-square:hover {
+    -fx-background-color: darkslategrey;
+}
+
+.square-selected {
+    -fx-stroke: #ffff00;
+    -fx-stroke-width: 3;
+}
+
+.square-possible-move {
+    -fx-effect: innershadow(gaussian, mediumseagreen, 10, 0.6, 0, 0);
+    -fx-cursor: hand;
+}
+
+.square-last-move {
+    -fx-stroke: #ff6600;
+    -fx-stroke-width: 3;
+}
+
+.selected-piece {
+    -fx-effect: dropshadow(gaussian, gold, 20, 0.6, 0, 0);
+}
+
+.opponent-piece {
+    -fx-effect: dropshadow(gaussian, coral, 20, 0.4, 0, 0);
+    -fx-cursor: hand;
+}
