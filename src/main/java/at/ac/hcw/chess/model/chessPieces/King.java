@@ -5,46 +5,37 @@ import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
 
-import java.util.ArrayList;
-
 public class King extends ChessPiece {
+
     public King(Position position, Color color) {
         super(position, color);
     }
 
-    /**
-     * the king is the only piece that can not be pinned<br>
-     * this will always return null
-     */
     @Override
-    public MoveList pinnedMoves(ChessPieceList piecesOnBoard) {
-        return null;
+    public String toString() {
+        // Returns the unicode chess character for console display
+        return (this.getColor() == Color.WHITE) ? "♔" : "♚";
     }
 
     @Override
     public void setPossibleMoves(ChessPieceList piecesOnBoard) {
-        MoveList movesToTry = new MoveList();
+        MoveList targets = new MoveList();
+        int c = this.position.getColumn();
+        int r = this.position.getRow();
 
-        for (int row = this.position.getRow() - 1; row <= this.position.getRow() + 1; row++) {
-            for (int col = this.position.getColumn() - 1; col <= this.position.getColumn() + 1; col++) {
+        // Check all 8 squares around the king
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                if (x == 0 && y == 0) continue; // Skip current position
+
                 try {
-                    movesToTry.add(new Position(col, row));
-                } catch (IndexOutOfBoundsException ignored) {}
+                    // Try to create position; catch block handles out-of-bounds
+                    targets.add(new Position(c + x, r + y));
+                } catch (Exception ignored) { }
             }
         }
 
-        this.possibleMoves = stepOrJump(piecesOnBoard, movesToTry);
-    }
-
-    public ArrayList<MoveList> checkedBy(ChessPieceList piecesOnBoard) {
-        var checkedBy = new ArrayList<MoveList>();
-        return checkedBy;
-    }
-
-    @Override
-    public String toString() {
-        if (this.getColor() == Color.WHITE)
-            return "♔";
-        return "♚";
+        // stepOrJump handles collision with own pieces
+        this.possibleMoves = stepOrJump(piecesOnBoard, targets);
     }
 }
