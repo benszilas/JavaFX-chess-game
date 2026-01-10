@@ -3,10 +3,8 @@ package at.ac.hcw.chess.controller;
 import at.ac.hcw.chess.model.GameModel;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
 import at.ac.hcw.chess.model.chessPieces.King;
-import at.ac.hcw.chess.model.utils.ChessPieceList;
-import at.ac.hcw.chess.model.utils.Color;
-import at.ac.hcw.chess.model.utils.MoveList;
-import at.ac.hcw.chess.model.utils.Position;
+import at.ac.hcw.chess.model.chessPieces.Pawn;
+import at.ac.hcw.chess.model.utils.*;
 import at.ac.hcw.chess.view.GameView;
 import javafx.application.Platform;
 import javafx.event.Event;
@@ -91,10 +89,16 @@ public class GameController {
             System.out.println("moving " + piece + " to " + target);
             take(model.getChessPieces().getPiece(target));
             piece.moveTo(target, (ImageView) view.chessBoardChildNode(piece.getPosition(), ImageView.class));
+            if (piece instanceof Pawn && ((Pawn) piece).canPromote())
+                node.fireEvent(new PromotionEvent(piece));
             return true;
         }
         System.out.println("can't move " + piece + " to " + target);
         return false;
+    }
+
+    public void promote(ChessPiece piece) {
+
     }
 
     private void take(ChessPiece target) {

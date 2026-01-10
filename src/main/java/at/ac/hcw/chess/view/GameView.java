@@ -3,10 +3,7 @@ package at.ac.hcw.chess.view;
 import at.ac.hcw.chess.controller.GameController;
 import at.ac.hcw.chess.model.GameModel;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
-import at.ac.hcw.chess.model.utils.CastleEvent;
-import at.ac.hcw.chess.model.utils.Color;
-import at.ac.hcw.chess.model.utils.MoveList;
-import at.ac.hcw.chess.model.utils.Position;
+import at.ac.hcw.chess.model.utils.*;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -132,7 +129,7 @@ public class GameView implements Builder<Region> {
                     } catch (IndexOutOfBoundsException e) {
                         throw new RuntimeException("Position with column " + col + " and row " + row + " is out of bounds: " + e);
                     }
-                    square.getStyleClass().add((row + col) % 2 == 0 ? "light-square" : "dark-square");
+                    square.getStyleClass().add((row + col) % 2 == 0 ? "dark-square" : "light-square");
 
                     square.setOnMouseClicked(controller::clickChessBoard);
 
@@ -146,6 +143,9 @@ public class GameView implements Builder<Region> {
         }
         board.addEventHandler(CastleEvent.CASTLE, e -> {
             controller.castleRook(e.getOldRookPosition(), e.getNewRookPosition());
+        });
+        board.addEventHandler(PromotionEvent.PROMOTION, e -> {
+            controller.promote(e.getPawn());
         });
     }
 
