@@ -1,6 +1,7 @@
 package at.ac.hcw.chess;
 
 import at.ac.hcw.chess.controller.GameController;
+import at.ac.hcw.chess.model.utils.PopulateBoard;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Region;
@@ -10,7 +11,7 @@ public class ChessBoardOnlyApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        GameController controller = new GameController();
+        GameController controller = new GameController(PopulateBoard.noPawnsBoard());
 
         Region root = controller.getView();
 

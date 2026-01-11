@@ -107,14 +107,13 @@ public class GameModel {
 
     private void printChessBoardLine(ChessPiece[][] board, StringBuilder charBoard, int row) {
         charBoard.append(row + 1);
-        charBoard.append(" ");
         for (int column = 0; column < 8; column++) {
             if (board[row][column] != null) {
                 charBoard.append(board[row][column].toString());
             } else if ((row + column & 0x1) == 0) {
-                charBoard.append("＿");
+                charBoard.append("□");
             } else {
-                charBoard.append("⛆");
+                charBoard.append("■");
             }
         }
         charBoard.append(row + 1);
@@ -124,11 +123,11 @@ public class GameModel {
     @Override
     public String toString() {
         ChessPiece[][] board = _2DBoard();
-        StringBuilder charBoard = new StringBuilder("  ＡＢＣＤＥＦＧＨ " + System.lineSeparator());
+        StringBuilder charBoard = new StringBuilder(" ABCDEFGH " + System.lineSeparator());
         for (int row = 0; row < 8; row++) {
             printChessBoardLine(board, charBoard, row);
         }
-        charBoard.append("  ＡＢＣＤＥＦＧＨ ");
+        charBoard.append(" ABCDEFGH ");
         return charBoard.toString();
     }
 }
