@@ -43,3 +43,7 @@ bin/
 
 ## test log
 TestMain.output.log
+
+## claude
+CLAUDE.md
+.claude/

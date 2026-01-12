@@ -2,6 +2,10 @@
     -fx-background-color: linear-gradient(to bottom, #2c3e50, #1a252f);
 }
 
+.menu-root:hover {
+    -fx-cursor: move ;
+}
+
 .menu-title {
     -fx-font-size: 72px;
     -fx-font-weight: bold;
