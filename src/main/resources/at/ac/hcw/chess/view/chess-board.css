@@ -1,39 +1,101 @@
+/* =========================
+   ROOT CONTAINER
+   ========================= */
+
+.game-root {
+    -fx-background-color: linear-gradient(to bottom, #2c3e50, #1a252f);
+}
+
+/* =========================
+   BOARD CONTAINER
+   ========================= */
+
+.board-container {
+    -fx-background-color: #1a252f;
+    -fx-background-radius: 12;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 15, 0, 0, 4);
+}
+
+/* =========================
+   BOARD SQUARES
+   ========================= */
+
 .light-square {
-    -fx-background-color: white;
+    -fx-background-color: #ecf0f1;
 }
 
 .dark-square {
-    -fx-background-color: #333333;
+    -fx-background-color: #888           /* #3498db; */
 }
 
 .light-square:hover {
-    -fx-background-color: #e0e0e0;
+    -fx-background-color: #bdc3c7;
 }
 
 .dark-square:hover {
-    -fx-background-color: darkslategrey;
+    -fx-background-color: #5dade2;
 }
 
 .square-selected {
-    -fx-stroke: #ffff00;
+    -fx-stroke: #f1c40f;
     -fx-stroke-width: 3;
 }
 
 .square-possible-move {
-    -fx-effect: innershadow(gaussian, mediumseagreen, 10, 0.6, 0, 0);
+    -fx-effect: innershadow(gaussian, #2ecc71, 12, 0.7, 0, 0);
     -fx-cursor: hand;
 }
 
 .square-last-move {
-    -fx-stroke: #ff6600;
+    -fx-stroke: #e67e22;
     -fx-stroke-width: 3;
 }
 
+/* =========================
+   CHESS PIECES
+   ========================= */
+
+.chess-piece {
+    -fx-cursor: hand;
+}
+
 .selected-piece {
-    -fx-effect: dropshadow(gaussian, gold, 20, 0.6, 0, 0);
+    -fx-effect: dropshadow(gaussian, #f1c40f, 25, 0.7, 0, 0);
 }
 
 .opponent-piece {
-    -fx-effect: dropshadow(gaussian, coral, 20, 0.4, 0, 0);
+    -fx-effect: dropshadow(gaussian, #e74c3c, 20, 0.5, 0, 0);
     -fx-cursor: hand;
+}
+
+/* =========================
+   BOARD LABELS
+   ========================= */
+
+.board-label {
+    -fx-text-fill: #ecf0f1;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+/* =========================
+   CAPTURED PIECES PANELS
+   ========================= */
+
+.captured-panel {
+    -fx-background-color: rgba(52, 73, 94, 0.9);
+    -fx-background-radius: 10;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0, 2, 2);
+}
+
+.captured-panel-title {
+    -fx-text-fill: #ecf0f1;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.captured-piece-view {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 3, 0, 1, 1);
 }

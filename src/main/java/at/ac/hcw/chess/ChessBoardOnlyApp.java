@@ -1,22 +1,15 @@
 package at.ac.hcw.chess;
 
-import at.ac.hcw.chess.controller.GameController;
+import at.ac.hcw.chess.controller.MenuController;
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
 public class ChessBoardOnlyApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        GameController controller = new GameController();
-
-        Region root = controller.getView();
-
-        Scene scene = new Scene(root, 900, 900);
-        stage.setTitle("Chess – GameView Test");
-        stage.setScene(scene);
+        MenuController menuController = new MenuController(stage);
+        menuController.showMainMenu();
         stage.show();
     }
 

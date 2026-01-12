@@ -9,6 +9,8 @@ import java.util.ArrayList;
 public class GameModel {
     private final ChessPieceList chessPieces;
     private final ChessPieceList promotablePieces;
+    private final ChessPieceList capturedWhitePieces;
+    private final ChessPieceList capturedBlackPieces;
     private ChessPiece selectedPiece = null;
     private final ArrayList<MoveRecord> moveHistory;
     private Color currentPlayer;
@@ -19,6 +21,9 @@ public class GameModel {
         this.promotablePieces = new ChessPieceList();
         this.promotablePieces.add(new Queen(new Position(1,1), Color.BLACK));
         this.promotablePieces.add(new Queen(new Position(8,8), Color.WHITE));
+
+        this.capturedWhitePieces = new ChessPieceList();
+        this.capturedBlackPieces = new ChessPieceList();
 
         this.currentPlayer = Color.WHITE;
 
@@ -33,6 +38,9 @@ public class GameModel {
         this.promotablePieces.add(new Queen(new Position(1,1), Color.BLACK));
         this.promotablePieces.add(new Queen(new Position(8,8), Color.WHITE));
 
+        this.capturedWhitePieces = new ChessPieceList();
+        this.capturedBlackPieces = new ChessPieceList();
+
         this.currentPlayer = Color.WHITE;
 
         this.moveHistory = new ArrayList<MoveRecord>();
@@ -44,6 +52,14 @@ public class GameModel {
 
     public ChessPieceList getPromotablePieces() {
         return promotablePieces;
+    }
+
+    public ChessPieceList getCapturedWhitePieces() {
+        return capturedWhitePieces;
+    }
+
+    public ChessPieceList getCapturedBlackPieces() {
+        return capturedBlackPieces;
     }
 
     public ChessPiece getSelectedPiece() {

@@ -75,7 +75,7 @@ public abstract class ChessPiece {
 
     /**
      * check possible moves in a diagonal range
-     * <p><b>can't</b> move through pieces</p>
+     * <p><b>can't</b> move through pieces</p>m,  mn
      *
      * @param piecesOnBoard the current pieces on the chessboard
      * @return empty squares and opponent pieces visible in a diagonal line

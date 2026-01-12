@@ -100,7 +100,16 @@ public class GameController {
         if (target != null) {
             model.getChessPieces().remove(target);
             model.getPromotablePieces().add(target);
+
+            // Add to captured pieces list based on color
+            if (target.getColor() == Color.WHITE) {
+                model.getCapturedWhitePieces().add(target);
+            } else {
+                model.getCapturedBlackPieces().add(target);
+            }
+
             view.getBoard().getChildren().remove(view.chessBoardChildNode(target.getPosition(), ImageView.class));
+            view.refreshCapturedPieces();
             System.out.println(model.getCurrentPlayer() + "'s " + target + " was taken");
         }
     }

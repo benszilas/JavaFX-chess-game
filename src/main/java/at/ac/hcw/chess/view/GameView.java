@@ -7,12 +7,15 @@ import at.ac.hcw.chess.model.utils.CastleEvent;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.MoveList;
 import at.ac.hcw.chess.model.utils.Position;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.util.Builder;
+import at.ac.hcw.chess.model.utils.ChessPieceList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,8 @@ public class GameView implements Builder<Region> {
     private final GameController controller;
 
     private GridPane board;
+    private VBox capturedWhitePanel;
+    private VBox capturedBlackPanel;
     private final List<Node> pieceViews;
 
     public GameView(GameModel model, GameController controller) {
@@ -38,14 +43,33 @@ public class GameView implements Builder<Region> {
     @Override
     public Region build() {
         BorderPane root = new BorderPane();
-        board = new GridPane();
-
-        setupGridConstraints(board);
-        board.getStylesheets().add(
+        root.getStylesheets().add(
                 Objects.requireNonNull(getClass().getResource("chess-board.css")).toExternalForm()
         );
+        root.getStyleClass().add("game-root");
+        root.setPadding(new Insets(20));
 
-        root.setCenter(board);
+        board = new GridPane();
+        setupGridConstraints(board);
+
+        StackPane boardContainer = new StackPane(board);
+        boardContainer.getStyleClass().add("board-container");
+
+        // Create side panels for captured pieces
+        capturedWhitePanel = createCapturedPiecesPanel("Captured", "White");
+        capturedBlackPanel = createCapturedPiecesPanel("Captured", "Black");
+
+        VBox leftWrapper = new VBox(capturedWhitePanel);
+        leftWrapper.setAlignment(Pos.CENTER);
+        leftWrapper.setPadding(new Insets(0, 15, 0, 0));
+
+        VBox rightWrapper = new VBox(capturedBlackPanel);
+        rightWrapper.setAlignment(Pos.CENTER);
+        rightWrapper.setPadding(new Insets(0, 0, 0, 15));
+
+        root.setCenter(boardContainer);
+        root.setLeft(leftWrapper);
+        root.setRight(rightWrapper);
         redraw();
         return root;
     }
@@ -122,9 +146,13 @@ public class GameView implements Builder<Region> {
                 Node node;
 
                 if (row == 0 && col > 0 && col < UI_SIZE - 1) {
-                    node = new Label(String.valueOf((char) ('A' + col - 1)));
+                    Label label = new Label(String.valueOf((char) ('A' + col - 1)));
+                    label.getStyleClass().add("board-label");
+                    node = label;
                 } else if (col == 0 && row > 0 && row < UI_SIZE - 1) {
-                    node = new Label(String.valueOf(row));
+                    Label label = new Label(String.valueOf(row));
+                    label.getStyleClass().add("board-label");
+                    node = label;
                 } else if (row > 0 && row < UI_SIZE - 1 && col < UI_SIZE - 1) {
                     StackPane square = new StackPane();
                     try {
@@ -177,6 +205,60 @@ public class GameView implements Builder<Region> {
         view.setPreserveRatio(true);
         view.fitWidthProperty().bind(board.widthProperty().divide(UI_SIZE));
         view.fitHeightProperty().bind(board.heightProperty().divide(UI_SIZE));
+
+        return view;
+    }
+
+    /* =========================
+       CAPTURED PIECES PANELS
+       ========================= */
+
+    private VBox createCapturedPiecesPanel(String title, String subtitle) {
+        VBox panel = new VBox(5);
+        panel.getStyleClass().add("captured-panel");
+        panel.setMinWidth(120);
+
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("captured-panel-title");
+
+        Label subtitleLabel = new Label(subtitle);
+        subtitleLabel.getStyleClass().add("captured-panel-title");
+
+        panel.getChildren().addAll(titleLabel, subtitleLabel);
+        return panel;
+    }
+
+    public void refreshCapturedPieces() {
+        refreshCapturedPanel(capturedWhitePanel, model.getCapturedWhitePieces());
+        refreshCapturedPanel(capturedBlackPanel, model.getCapturedBlackPieces());
+    }
+
+    private void refreshCapturedPanel(VBox panel, ChessPieceList capturedPieces) {
+        // Remove all children except the title labels (first two children)
+        if (panel.getChildren().size() > 2) {
+            panel.getChildren().remove(2, panel.getChildren().size());
+        }
+
+        // Add captured piece images
+        for (ChessPiece piece : capturedPieces) {
+            ImageView pieceView = createCapturedPieceView(piece);
+            panel.getChildren().add(pieceView);
+        }
+    }
+
+    private ImageView createCapturedPieceView(ChessPiece piece) {
+        String color = piece.getColor() == Color.WHITE ? "white" : "black";
+        String type = piece.getClass().getSimpleName().toLowerCase();
+        String path = "/images/" + color + "_" + type + ".png";
+
+        ImageView view = new ImageView(
+                new Image(Objects.requireNonNull(getClass().getResource(path)).toExternalForm())
+        );
+
+        view.setPreserveRatio(true);
+        view.setFitWidth(35);
+        view.setFitHeight(35);
+        view.getStyleClass().add("captured-piece-view");
 
         return view;
     }
