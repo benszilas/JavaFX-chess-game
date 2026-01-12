@@ -3,13 +3,13 @@ package at.ac.hcw.chess.view;
 import at.ac.hcw.chess.controller.GameController;
 import at.ac.hcw.chess.model.GameModel;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
-import at.ac.hcw.chess.model.utils.CastleEvent;
-import at.ac.hcw.chess.model.utils.Color;
-import at.ac.hcw.chess.model.utils.MoveList;
-import at.ac.hcw.chess.model.utils.Position;
+import at.ac.hcw.chess.model.utils.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -160,11 +160,9 @@ public class GameView implements Builder<Region> {
                     } catch (IndexOutOfBoundsException e) {
                         throw new RuntimeException("Position with column " + col + " and row " + row + " is out of bounds: " + e);
                     }
-                    square.getStyleClass().add((row + col) % 2 == 0 ? "light-square" : "dark-square");
+                    square.getStyleClass().add((row + col) % 2 == 0 ? "dark-square" : "light-square");
 
-                    square.setOnMouseClicked(e ->
-                            controller.clickChessBoard(e, square)
-                    );
+                    square.setOnMouseClicked(controller::clickChessBoard);
 
                     node = square;
                 } else {
@@ -177,6 +175,9 @@ public class GameView implements Builder<Region> {
         board.addEventHandler(CastleEvent.CASTLE, e -> {
             controller.castleRook(e.getOldRookPosition(), e.getNewRookPosition());
         });
+        board.addEventHandler(PromotionEvent.PROMOTION, e -> {
+            showPromotionAlert(e.getPawn());
+        });
     }
 
     /* =========================
@@ -186,11 +187,42 @@ public class GameView implements Builder<Region> {
     private void drawPieces() {
         for (ChessPiece piece : model.getChessPieces()) {
             Node view = createPieceView(piece);
-            view.setOnMouseClicked(e -> controller.clickChessBoard(e, view));
+            view.setOnMouseClicked(controller::clickChessBoard);
             view.getStyleClass().add("chess-piece");
             pieceViews.add(view);
             board.add(view, piece.getPosition().getColumn(), piece.getPosition().getRow());
         }
+    }
+
+    public void showPromotionAlert(ChessPiece pawn) {
+        Alert alert = new Alert(Alert.AlertType.NONE);
+        ButtonType skip = new ButtonType("Skip this promotion", ButtonBar.ButtonData.OK_DONE);
+        alert.setTitle("Pawn Promotion for " + model.getCurrentPlayer());
+        alert.setHeaderText("Choose a piece");
+        alert.getButtonTypes().add(skip);
+
+        HBox content = new HBox();
+        content.setAlignment(Pos.CENTER);
+
+        model.currentUniquePromotable().forEach(chessPiece -> {
+            ImageView view = createPieceView(chessPiece);
+            content.getChildren().add(view);
+
+            view.setOnMouseClicked(e -> {
+                content.getChildren().remove(view);
+                pieceViews.add(view);
+                board.getChildren().add(view);
+                view.setOnMouseClicked(controller::clickChessBoard);
+                controller.take(pawn);
+                controller.promote(chessPiece, view, pawn.getPosition().clone());
+                alert.close();
+            });
+        });
+        if (content.getChildren().isEmpty())
+            return;
+
+        alert.setGraphic(content);
+        alert.showAndWait();
     }
 
     private ImageView createPieceView(ChessPiece piece) {

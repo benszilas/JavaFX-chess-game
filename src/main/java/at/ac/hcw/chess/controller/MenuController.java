@@ -1,5 +1,6 @@
 package at.ac.hcw.chess.controller;
 
+import at.ac.hcw.chess.model.utils.GameEndedEvent;
 import at.ac.hcw.chess.view.GameMenuView;
 import at.ac.hcw.chess.view.MainMenuView;
 import javafx.application.Platform;
@@ -42,6 +43,7 @@ public class MenuController {
         Scene gameScene = new Scene(gameRoot, 900, 900);
         stage.setTitle("Chess");
         stage.setScene(gameScene);
+        gameScene.addEventHandler(GameEndedEvent.GAME_ENDED, e-> showMainMenu());
     }
 
     public void exitApplication() {

@@ -1,9 +1,8 @@
 package at.ac.hcw.chess.model.chessPieces;
 
-import at.ac.hcw.chess.model.utils.ChessPieceList;
-import at.ac.hcw.chess.model.utils.Color;
-import at.ac.hcw.chess.model.utils.MoveList;
-import at.ac.hcw.chess.model.utils.Position;
+import at.ac.hcw.chess.model.utils.*;
+import javafx.event.Event;
+import javafx.scene.image.ImageView;
 
 public class Pawn extends ChessPiece {
     private final int targetRank;
@@ -43,6 +42,20 @@ public class Pawn extends ChessPiece {
         }
     }
 
+    /**
+     * handles edge case when the king can not move in front of an opponent pawn<br>
+     * king should be able to move in front of opponent pawns, because they can only take diagonally
+     */
+    public void removeStraightMoves() {
+        try {
+            Position firstMove = new Position(position.getColumn(), position.getRow() + direction);
+            possibleMoves.remove(firstMove);
+            Position secondMove = new Position(position.getColumn(), position.getRow() + direction * 2);
+            possibleMoves.remove(secondMove);
+        } catch (IndexOutOfBoundsException ignored) {
+        }
+    }
+
     @Override
     public void setLegalMoves(ChessPieceList pieceList) {
         super.setLegalMoves(pieceList);
@@ -62,6 +75,13 @@ public class Pawn extends ChessPiece {
 
     public boolean canPromote() {
         return position.getRow() == targetRank;
+    }
+
+    @Override
+    public void moveTo(Position newPosition, ImageView pieceView) {
+        super.moveTo(newPosition, pieceView);
+        if (canPromote())
+            pieceView.fireEvent(new PromotionEvent(this));
     }
 
     @Override

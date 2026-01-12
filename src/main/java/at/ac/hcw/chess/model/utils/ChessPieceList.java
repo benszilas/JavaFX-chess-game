@@ -62,15 +62,4 @@ public class ChessPieceList extends ArrayList<ChessPiece> {
         }
         return false;
     }
-
-    /**
-     * remove the piece at the specified position, if exists
-     * @param position of the piece to get removed
-     * @return the removed piece if successful, or null
-     */
-    public ChessPiece pop(ChessPiece piece) {
-        ChessPiece removed = piece;
-        remove(piece);
-        return piece;
-    }
 }

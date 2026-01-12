@@ -3,20 +3,15 @@ package at.ac.hcw.chess.controller;
 import at.ac.hcw.chess.model.GameModel;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
 import at.ac.hcw.chess.model.chessPieces.King;
-import at.ac.hcw.chess.model.utils.ChessPieceList;
-import at.ac.hcw.chess.model.utils.Color;
-import at.ac.hcw.chess.model.utils.MoveList;
-import at.ac.hcw.chess.model.utils.Position;
+import at.ac.hcw.chess.model.chessPieces.Pawn;
+import at.ac.hcw.chess.model.utils.*;
 import at.ac.hcw.chess.view.GameView;
-import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-
-import java.util.Objects;
 
 public class GameController {
     private final GameModel model;
@@ -29,7 +24,8 @@ public class GameController {
     }
 
     public GameController(ChessPieceList customPieces) {
-        this.model = new GameModel(customPieces);
+        this.model = new GameModel();
+        model.customGame(customPieces);
         view = new GameView(model, this);
         lookForGameOver();
     }
@@ -46,7 +42,8 @@ public class GameController {
         return view;
     }
 
-    public void clickChessBoard(Event mouseEvent, Node node) {
+    public void clickChessBoard(Event mouseEvent) {
+        Node node = (Node) mouseEvent.getTarget();
         int col = GridPane.getColumnIndex(node);
         int row = GridPane.getRowIndex(node);
 
@@ -96,7 +93,7 @@ public class GameController {
         return false;
     }
 
-    private void take(ChessPiece target) {
+    public void take(ChessPiece target) {
         if (target != null) {
             model.getChessPieces().remove(target);
             model.getPromotablePieces().add(target);
@@ -114,6 +111,16 @@ public class GameController {
         }
     }
 
+    public void promote(ChessPiece promoted, ImageView pieceView, Position position) {
+        model.getPromotablePieces().remove(promoted);
+        if (promoted.getColor() == Color.BLACK)
+            model.getCapturedBlackPieces().remove(promoted);
+        else
+            model.getCapturedWhitePieces().remove(promoted);
+        promoted.moveTo(position, pieceView);
+        model.getChessPieces().add(promoted);
+    }
+
     private void changePlayer() {
         model.changePlayer();
         removeHighlight(model.getSelectedPiece());
@@ -129,48 +136,67 @@ public class GameController {
         ChessPieceList currentPieces = model.getChessPieces();
         ChessPiece currentKing = currentPieces.findPieces(King.class, model.getCurrentPlayer()).getFirst();
 
+        currentPieces.remove(currentKing);
+        updateNextPlayerMoves(currentPieces);
+        currentPieces.add(currentKing);
+        updateCurrentPlayerMoves(currentPieces);
+
+        preventSelfCheck(currentKing);
+    }
+
+    private void updateNextPlayerMoves(ChessPieceList currentPieces) {
         currentPieces.forEach(chessPiece -> {
-            if (chessPiece.getColor() != model.getCurrentPlayer())
+            if (chessPiece.getColor() == model.getNextPlayer())
                 chessPiece.setPossibleMoves(currentPieces);
-            else if (!chessPiece.equals(currentKing))
+        });
+    }
+
+    private void updateCurrentPlayerMoves(ChessPieceList currentPieces) {
+        currentPieces.forEach(chessPiece -> {
+            if (chessPiece.getColor() == model.getCurrentPlayer())
                 chessPiece.setLegalMoves(currentPieces);
         });
-        preventSelfCheck(currentKing);
     }
 
     /**
      * see if after any legal move, the king would be in check<br>
-     * - remove opponent pieces attacked by the current king<br>
-     * - remove current king<br>
-     * - get all legal moves of the remaining opponents<br>
-     * - this new list will include defended opponents and covered checks
+     * this solves the edge case of taking a defended opponent<br>
+     * opponent moves are recalculated for every opponent next to the king<br>
      *
      * @param king the current king
      */
     private void preventSelfCheck(ChessPiece king) {
         ChessPieceList currentPieces = model.getChessPieces();
-        ChessPieceList removedPieces = new ChessPieceList();
+
+        ChessPieceList opponentPawns = currentPieces.findPieces(Pawn.class, model.getNextPlayer());
+        opponentPawns.forEach(piece -> {
+            Pawn pawn = (Pawn) piece;
+            pawn.removeStraightMoves();
+        });
 
         king.setLegalMoves(currentPieces);
 
-        king.getPossibleMoves().forEach(move -> {
-            ChessPiece opponentPiece = currentPieces.getPiece(move);
-            currentPieces.remove(opponentPiece);
-            removedPieces.add(opponentPiece);
-        });
+        var nextToKing = king.getPossibleMoves().stream()
+                .filter(position -> currentPieces.getPiece(position) != null).toList();
         currentPieces.remove(king);
-        removedPieces.add(king);
+        for (Position move : nextToKing) {
+            ChessPiece opponentPiece = currentPieces.getPiece(move);
 
-        currentPieces.forEach(chessPiece -> {
-            if (chessPiece.getColor() != model.getCurrentPlayer())
-                chessPiece.setPossibleMoves(currentPieces);
+            currentPieces.remove(opponentPiece);
+            updateNextPlayerMoves(currentPieces);
+
+            ChessPiece doubleKing = new King(king.getPosition(), king.getColor());
+            doubleKing.setLegalMoves(currentPieces);
+            king.getPossibleMoves().removeIf(position -> !doubleKing.getPossibleMoves().contains(position));
+            currentPieces.add(opponentPiece);
+        }
+
+        updateNextPlayerMoves(currentPieces);
+        opponentPawns.forEach(piece -> {
+            Pawn pawn = (Pawn) piece;
+            pawn.removeStraightMoves();
         });
-
-        ChessPiece doubleKing = new King(king.getPosition(), king.getColor());
-        doubleKing.setLegalMoves(currentPieces);
-        king.getPossibleMoves().removeIf(move -> !doubleKing.getPossibleMoves().contains(move));
-
-        currentPieces.addAll(removedPieces);
+        currentPieces.add(king);
     }
 
     /**
@@ -262,7 +288,7 @@ public class GameController {
      * otherwise force the king to avoid the check
      * otherwise emit a checkmate event
      */
-    private void handleCheck() {
+    private boolean isCheckmate() {
         MoveList kingCheckedFrom = kingCheckedFrom();
         var currentPlayersPieces = new ChessPieceList();
         currentPlayersPieces.addAll(model.getChessPieces().stream()
@@ -271,7 +297,7 @@ public class GameController {
         switch (kingCheckedFrom.size()) {
             case 0:
                 addCastleMoves();
-                return;
+                return false;
             case 1:
                 tryToBlockCheck(currentPlayersPieces, kingCheckedFrom);
                 break;
@@ -282,8 +308,7 @@ public class GameController {
         int allowedMovesCount = currentPlayersPieces.stream().mapToInt(
                 chessPiece -> chessPiece.getPossibleMoves().size()
         ).sum();
-        if (allowedMovesCount == 0)
-            emitCheckmateEvent();
+        return allowedMovesCount == 0;
     }
 
     /**
@@ -296,22 +321,25 @@ public class GameController {
         showResult("Checkmate!", winner.name() + " has beaten " + model.getCurrentPlayer().name() + " by checkmate!");
     }
 
-    private void emitDrawEvent() {
-        showResult("The game is a draw!", (model.getCurrentPlayer() + " has no more moves left!"));
+    private void emitDrawEvent(String message) {
+        showResult("The game is a draw!", message);
     }
 
     private void showResult(String title, String message) {
         view.getBoard().setDisable(true);
         System.out.println(model);
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
+        alert.setTitle("Game Over");
         alert.setHeaderText(title);
         alert.setContentText(message);
         alert.showAndWait();
-        Platform.exit();
+        view.getBoard().fireEvent(new GameEndedEvent());
     }
 
-    private void handleDraw() {
+    private void lookForDraw() {
+        if (model.getChessPieces().size() == 2)
+            emitDrawEvent("Only two kings left.");
+
         var currentPlayersPieces = new ChessPieceList();
         currentPlayersPieces.addAll(model.getChessPieces().stream()
                 .filter(piece -> piece.getColor() == model.getCurrentPlayer())
@@ -322,7 +350,7 @@ public class GameController {
                 .sum();
 
         if (allowedMovesCount == 0)
-            emitDrawEvent();
+            emitDrawEvent(model.getCurrentPlayer() + " has no more moves left!");
     }
 
     /**
@@ -331,7 +359,9 @@ public class GameController {
      */
     public void lookForGameOver() {
         updateMoves();
-        handleCheck();
-        handleDraw();
+        if (isCheckmate())
+            emitCheckmateEvent();
+        else
+            lookForDraw();
     }
 }

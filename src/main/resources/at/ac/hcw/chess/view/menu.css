@@ -2,15 +2,11 @@
     -fx-background-color: linear-gradient(to bottom, #2c3e50, #1a252f);
 }
 
-.menu-root:hover {
-    -fx-cursor: move ;
-}
-
 .menu-title {
     -fx-font-size: 72px;
     -fx-font-weight: bold;
     -fx-text-fill: white;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 2, 2);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 2, 2);
 }
 
 .menu-tile-button {
@@ -20,12 +16,12 @@
     -fx-font-weight: bold;
     -fx-background-radius: 10;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 2, 2);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 2, 2);
 }
 
 .menu-tile-button:hover {
     -fx-background-color: linear-gradient(to bottom, #5dade2, #3498db);
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 3, 3);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 3, 3);
 }
 
 .menu-tile-button:pressed {
