@@ -76,7 +76,8 @@ public class ChessPieceTest {
     }
 
     private GameModel newBoard(ChessPieceList pieces) {
-        GameModel board = new GameModel(pieces);
+        GameModel board = new GameModel();
+        board.customGame(pieces);
         this.pw.println("created board");
         this.pw.println(board);
         return board;

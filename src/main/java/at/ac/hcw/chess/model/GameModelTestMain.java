@@ -88,7 +88,8 @@ public class GameModelTestMain {
 
         getPromotablePiecesTest(model);
 
-        GameModel customGame1 = new GameModel(PopulateBoard.noPawnsBoard());
+        GameModel customGame1 = new GameModel();
+        customGame1.customGame(PopulateBoard.noPawnsBoard());
         pw.println("made custom game:");
         pw.println(customGame1);
         ChessPiece A1 = customGame1.getChessPieces().getPiece(new Position(SquareName.A1));

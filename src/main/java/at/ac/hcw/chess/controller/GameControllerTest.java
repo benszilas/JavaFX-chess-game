@@ -11,7 +11,7 @@ public class GameControllerTest {
 
     public void test1() {
         var pieces = PopulateBoard.checkmate1();
-        var controller = new GameController(pieces);
+        var controller = new GameController(() -> {}, pieces);
         System.out.println("testing checkmate");
         controller.lookForGameOver();
         var expectedBlackRookMoves = new MoveList();
@@ -35,14 +35,14 @@ public class GameControllerTest {
     }
 
     public void test2() {
-        var controller = new GameController(PopulateBoard.draw1());
+        var controller = new GameController(() -> {}, PopulateBoard.draw1());
         System.out.println("testing draw");
         controller.lookForGameOver();
     }
 
     public void test3() {
         var customPieces = PopulateBoard.mateInOne1();
-        var controller = new GameController(customPieces);
+        var controller = new GameController(() -> {}, customPieces);
         System.out.println("testing mate in one");
         controller.lookForGameOver();
         var whiteRook = customPieces.findPieces(Rook.class, Color.WHITE).getFirst();

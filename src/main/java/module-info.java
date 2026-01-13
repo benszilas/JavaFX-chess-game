@@ -5,4 +5,6 @@ module at.ac.hcw.chess {
 
     opens at.ac.hcw.chess to javafx.fxml;
     exports at.ac.hcw.chess;
+    exports at.ac.hcw.chess.controller;
+    exports at.ac.hcw.chess.view;
 }
