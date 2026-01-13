@@ -29,8 +29,8 @@ public class GameController {
         lookForGameOver();
     }
 
-    public GameController(ChessPieceList customPieces) {
-        this.exitCallback = () -> {};
+    public GameController(Runnable exitCallback, ChessPieceList customPieces) {
+        this.exitCallback = exitCallback;
         this.model = new GameModel();
         model.customGame(customPieces);
         view = new GameView(model, this, exitCallback);
