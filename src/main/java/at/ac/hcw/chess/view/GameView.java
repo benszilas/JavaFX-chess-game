@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
@@ -28,15 +29,17 @@ public class GameView implements Builder<Region> {
 
     private final GameModel model;
     private final GameController controller;
+    private final Runnable exitCallback;
 
     private GridPane board;
     private VBox capturedWhitePanel;
     private VBox capturedBlackPanel;
     private final List<Node> pieceViews;
 
-    public GameView(GameModel model, GameController controller) {
+    public GameView(GameModel model, GameController controller, Runnable exitCallback) {
         this.model = model;
         this.controller = controller;
+        this.exitCallback = exitCallback;
         this.pieceViews = new ArrayList<>();
     }
 
@@ -54,10 +57,11 @@ public class GameView implements Builder<Region> {
 
         StackPane boardContainer = new StackPane(board);
         boardContainer.getStyleClass().add("board-container");
+        boardContainer.maxWidthProperty().bind(boardContainer.heightProperty());
 
         // Create side panels for captured pieces
-        capturedWhitePanel = createCapturedPiecesPanel("Captured", "White");
-        capturedBlackPanel = createCapturedPiecesPanel("Captured", "Black");
+        capturedWhitePanel = createCapturedPiecesPanel("Geschlagen", "Weiß");
+        capturedBlackPanel = createCapturedPiecesPanel("Geschlagen", "Schwarz");
 
         VBox leftWrapper = new VBox(capturedWhitePanel);
         leftWrapper.setAlignment(Pos.CENTER);
@@ -67,9 +71,19 @@ public class GameView implements Builder<Region> {
         rightWrapper.setAlignment(Pos.CENTER);
         rightWrapper.setPadding(new Insets(0, 0, 0, 15));
 
+        // Create exit button in bottom-right
+        Button exitButton = new Button("Beenden");
+        exitButton.getStyleClass().add("exit-button");
+        exitButton.setOnAction(e -> exitCallback.run());
+
+        HBox bottomBar = new HBox(exitButton);
+        bottomBar.setAlignment(Pos.CENTER_RIGHT);
+        bottomBar.setPadding(new Insets(15, 0, 0, 0));
+
         root.setCenter(boardContainer);
         root.setLeft(leftWrapper);
         root.setRight(rightWrapper);
+        root.setBottom(bottomBar);
         redraw();
         return root;
     }
