@@ -16,17 +16,24 @@ import javafx.scene.layout.Region;
 public class GameController {
     private final GameModel model;
     private final GameView view;
+    private final Runnable exitCallback;
 
     public GameController() {
+        this(() -> {});
+    }
+
+    public GameController(Runnable exitCallback) {
+        this.exitCallback = exitCallback;
         model = new GameModel();
-        view = new GameView(model, this);
+        view = new GameView(model, this, exitCallback);
         lookForGameOver();
     }
 
     public GameController(ChessPieceList customPieces) {
+        this.exitCallback = () -> {};
         this.model = new GameModel();
         model.customGame(customPieces);
-        view = new GameView(model, this);
+        view = new GameView(model, this, exitCallback);
         lookForGameOver();
     }
 

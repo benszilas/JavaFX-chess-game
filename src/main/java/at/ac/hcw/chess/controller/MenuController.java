@@ -4,24 +4,31 @@ import at.ac.hcw.chess.model.utils.GameEndedEvent;
 import at.ac.hcw.chess.view.GameMenuView;
 import at.ac.hcw.chess.view.MainMenuView;
 import javafx.application.Platform;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.Region;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class MenuController {
     private final Stage stage;
     private Scene mainMenuScene;
     private Scene gameMenuScene;
+    private final double screenWidth;
+    private final double screenHeight;
 
     public MenuController(Stage stage) {
         this.stage = stage;
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        this.screenWidth = screenBounds.getWidth();
+        this.screenHeight = screenBounds.getHeight();
     }
 
     public void showMainMenu() {
         if (mainMenuScene == null) {
             MainMenuView mainMenuView = new MainMenuView(this);
             Region root = mainMenuView.build();
-            mainMenuScene = new Scene(root, 900, 900);
+            mainMenuScene = new Scene(root, screenWidth, screenHeight);
         }
         stage.setTitle("SCHACH");
         stage.setScene(mainMenuScene);
@@ -31,16 +38,16 @@ public class MenuController {
         if (gameMenuScene == null) {
             GameMenuView gameMenuView = new GameMenuView(this);
             Region root = gameMenuView.build();
-            gameMenuScene = new Scene(root, 900, 900);
+            gameMenuScene = new Scene(root, screenWidth, screenHeight);
         }
         stage.setTitle("SPIELMENU");
         stage.setScene(gameMenuScene);
     }
 
     public void startGame() {
-        GameController gameController = new GameController();
+        GameController gameController = new GameController(this::exitApplication);
         Region gameRoot = gameController.getView();
-        Scene gameScene = new Scene(gameRoot, 900, 900);
+        Scene gameScene = new Scene(gameRoot, screenWidth, screenHeight);
         stage.setTitle("Chess");
         stage.setScene(gameScene);
         gameScene.addEventHandler(GameEndedEvent.GAME_ENDED, e-> showMainMenu());
