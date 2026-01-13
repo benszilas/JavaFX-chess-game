@@ -10,6 +10,8 @@ import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 
@@ -17,6 +19,7 @@ public class GameController {
     private final GameModel model;
     private final GameView view;
     private final Runnable exitCallback;
+    private ChessApiClient client = null;
 
     public GameController() {
         this(() -> {});
@@ -35,6 +38,11 @@ public class GameController {
         model.customGame(customPieces);
         view = new GameView(model, this, exitCallback);
         lookForGameOver();
+    }
+
+    public void addBot(Color color, int depth) {
+        client = new ChessApiClient(depth);
+        model.setBot(color);
     }
 
     public Region getView() {
@@ -58,6 +66,8 @@ public class GameController {
         if (moveSelectedPiece(col, row, node)) {
             changePlayer();
             lookForGameOver();
+            printTurn();
+            getBotMove();
         }
     }
 
@@ -132,9 +142,37 @@ public class GameController {
         model.changePlayer();
         removeHighlight(model.getSelectedPiece());
         model.selectPiece((ChessPiece) null);
+    }
+
+    private void printTurn() {
         System.out.println("next to move: " + model.getCurrentPlayer());
         System.out.println("FEN notation:");
         System.out.println(model + System.lineSeparator());
+    }
+
+    private void getBotMove() {
+        if (this.client != null && model.getCurrentPlayer() == model.getBot()) {
+            client.request(model.toString());
+            System.out.println(client.getText());
+            System.out.println(client.getMove());
+            System.out.println(client.getPromotion());
+
+            Position piece = new Position(client.getMove().substring(0, 2));
+            model.selectPiece(piece);
+            Position target = new Position(client.getMove().substring(2, 4));
+            view.chessBoardChildNode(target, Node.class).fireEvent(new MouseEvent(
+                    MouseEvent.MOUSE_CLICKED,
+                    0, 0,          // x, y
+                    0, 0,          // screenX, screenY
+                    MouseButton.PRIMARY,
+                    1,             // click count
+                    false, false, false, false, // modifier keys
+                    true,          // primary button down
+                    false, false, false, false, // middle/right/back/forward
+                    true,          // synthesized
+                    null          // still since press
+            ));
+        }
     }
 
     /**
@@ -204,7 +242,7 @@ public class GameController {
     /**
      * <b>ASSUME<b/> the current King is <b>NOT<b/> in check<br>
      * see if the king can castle in either direction.<br>
-     * if yes, add that to the moves.
+     * if yes, add that to the moves and to the FEN notation.
      */
     private void addCastleMoves() {
         King currentKing = (King) model.getChessPieces().findPieces(King.class, model.getCurrentPlayer()).getFirst();
@@ -217,7 +255,9 @@ public class GameController {
             try {
                 Position last = new Position(range.getLast().getColumn() + direction, currentKing.getPosition().getRow());
                 range.add(last);
-                currentKing.tryAddCastleMove(getModel().getChessPieces(), range);
+                model.addCastle(
+                        currentKing.tryAddCastleMove(model.getChessPieces(), range)
+                );
             } catch (IndexOutOfBoundsException ignore) {
             }
         }

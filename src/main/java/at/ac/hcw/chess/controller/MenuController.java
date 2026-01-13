@@ -1,5 +1,7 @@
 package at.ac.hcw.chess.controller;
 
+import at.ac.hcw.chess.model.utils.ChessPieceList;
+import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.GameEndedEvent;
 import at.ac.hcw.chess.view.GameMenuView;
 import at.ac.hcw.chess.view.MainMenuView;
@@ -44,13 +46,29 @@ public class MenuController {
         stage.setScene(gameMenuScene);
     }
 
-    public void startGame() {
-        GameController gameController = new GameController(this::exitApplication);
+    public void startGame(GameController gameController) {
+        if (gameController == null)
+            gameController = new GameController(this::exitApplication);
         Region gameRoot = gameController.getView();
         Scene gameScene = new Scene(gameRoot, screenWidth, screenHeight);
         stage.setTitle("Chess");
         stage.setScene(gameScene);
         gameScene.addEventHandler(GameEndedEvent.GAME_ENDED, e-> showMainMenu());
+    }
+
+    public GameController customGame(ChessPieceList customPieces, Color botColor, int botDepth) {
+        GameController gameController;
+        if (customPieces == null) {
+            gameController = new GameController(this::exitApplication);
+        } else {
+            gameController = new GameController(this::exitApplication, customPieces);
+        }
+
+        if (botColor != null) {
+            gameController.addBot(botColor, botDepth);
+        }
+
+        return gameController;
     }
 
     public void exitApplication() {

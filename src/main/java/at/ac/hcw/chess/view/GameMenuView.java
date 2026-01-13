@@ -1,6 +1,8 @@
 package at.ac.hcw.chess.view;
 
 import at.ac.hcw.chess.controller.MenuController;
+import at.ac.hcw.chess.model.utils.Color;
+import at.ac.hcw.chess.model.utils.PopulateBoard;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -50,10 +52,12 @@ public class GameMenuView implements Builder<Region> {
         buttonPane.setPrefColumns(2);
 
         Button vsFriendBtn = createMenuButton("Gegen einen Freund");
-        vsFriendBtn.setOnAction(e -> controller.startGame());
+        vsFriendBtn.setOnAction(e -> controller.startGame(null));
 
         Button vsBotBtn = createMenuButton("Gegen einen Bot");
-        vsBotBtn.setDisable(true);
+        vsBotBtn.setOnAction(e -> {
+            controller.startGame(controller.customGame(PopulateBoard.classicGameBoard(), Color.BLACK, 10));
+        });
 
         buttonPane.getChildren().addAll(vsFriendBtn, vsBotBtn);
 

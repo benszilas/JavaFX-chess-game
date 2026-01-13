@@ -15,8 +15,10 @@ public class GameModel {
     private final ArrayList<MoveRecord> moveHistory;
     private Color currentPlayer;
     private Color nextPlayer;
-    private int fullMoves;
-    private int halfMoves;
+    private int fullMoves = 1;
+    private int halfMoves = 0;
+    private String castles = "";
+    private Color bot;
 
     public GameModel() {
         this.chessPieces = PopulateBoard.classicGameBoard();
@@ -31,9 +33,6 @@ public class GameModel {
         this.nextPlayer = Color.BLACK;
 
         this.moveHistory = new ArrayList<MoveRecord>();
-
-        fullMoves = 0;
-        halfMoves = 0;
     }
 
     public void customGame(ChessPieceList customPieces) {
@@ -89,6 +88,10 @@ public class GameModel {
         this.selectedPiece = chessPieces.getPiece(position);
     }
 
+    public void addCastle(String fenNotation) {
+        this.castles = this.castles + fenNotation;
+    }
+
     public ArrayList<MoveRecord> getMoveHistory() {
         return moveHistory;
     }
@@ -101,12 +104,21 @@ public class GameModel {
         return nextPlayer;
     }
 
+    public void setBot(Color bot) {
+        this.bot = bot;
+    }
+
+    public Color getBot() {
+        return bot;
+    }
+
     public void changePlayer() {
         Color color = currentPlayer;
         currentPlayer = nextPlayer;
         nextPlayer = color;
         halfMoves++;
         if ((halfMoves & 1) == 0) fullMoves++;
+        this.castles = "-";
     }
 
     private ChessPiece[][] _2DBoard() {
@@ -137,9 +149,12 @@ public class GameModel {
         fenString.append("/");
     }
 
+    /**
+     * @return the FEN notation of the current chess position as single line string
+     */
     @Override
     public String toString() {
-        String unusedFenString = " - - 0 ";
+        String unusedFenString = " - 0 ";
         ChessPiece[][] board = _2DBoard();
         StringBuilder fenString = new StringBuilder();
         for (int row = Position.MAX - 1; row >= 0; row--) {
@@ -148,6 +163,8 @@ public class GameModel {
         fenString.deleteCharAt(fenString.lastIndexOf("/"));
         fenString.append(" ");
         fenString.append(currentPlayer.toString().toLowerCase().charAt(0));
+        fenString.append(" ");
+        fenString.append(castles);
         fenString.append(unusedFenString);
         fenString.append(fullMoves);
         return fenString.toString();

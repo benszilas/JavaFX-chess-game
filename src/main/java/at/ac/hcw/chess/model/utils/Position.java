@@ -2,6 +2,7 @@ package at.ac.hcw.chess.model.utils;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.geometry.Pos;
 
 public class Position {
     private final SimpleIntegerProperty column;
@@ -20,6 +21,15 @@ public class Position {
         int ordinal = squareName.ordinal();
         this.column = new SimpleIntegerProperty((ordinal % Position.MAX) + Position.MIN);
         this.row = new SimpleIntegerProperty((ordinal / Position.MAX) + Position.MIN);
+    }
+
+    public Position(String squareName) {
+        if (squareName.length() != 2) throw new IndexOutOfBoundsException("square name too long!");
+
+        this.column = new SimpleIntegerProperty();
+        this.setColumn(squareName.toLowerCase().charAt(0) - 'a' + 1);
+        this.row = new SimpleIntegerProperty();
+        this.setRow(squareName.charAt(1) - '0');
     }
 
     public int getColumn() {
