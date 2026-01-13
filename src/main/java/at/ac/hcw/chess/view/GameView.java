@@ -57,6 +57,7 @@ public class GameView implements Builder<Region> {
 
         StackPane boardContainer = new StackPane(board);
         boardContainer.getStyleClass().add("board-container");
+        boardContainer.maxWidthProperty().bind(boardContainer.heightProperty());
 
         // Create side panels for captured pieces
         capturedWhitePanel = createCapturedPiecesPanel("Geschlagen", "Weiß");
