@@ -126,6 +126,8 @@ public class GameController {
         removeHighlight(model.getSelectedPiece());
         model.selectPiece((ChessPiece) null);
         System.out.println("next to move: " + model.getCurrentPlayer());
+        System.out.println("FEN notation:");
+        System.out.println(model + System.lineSeparator());
     }
 
     /**
@@ -144,37 +146,34 @@ public class GameController {
         preventSelfCheck(currentKing);
     }
 
+    /**
+     * set all possible moves for next player <br>
+     * <b>important</b> to remove pawn pushes for check validation
+     */
     private void updateNextPlayerMoves(ChessPieceList currentPieces) {
-        currentPieces.forEach(chessPiece -> {
-            if (chessPiece.getColor() == model.getNextPlayer())
-                chessPiece.setPossibleMoves(currentPieces);
-        });
-    }
-
-    private void updateCurrentPlayerMoves(ChessPieceList currentPieces) {
-        currentPieces.forEach(chessPiece -> {
-            if (chessPiece.getColor() == model.getCurrentPlayer())
-                chessPiece.setLegalMoves(currentPieces);
-        });
+        model.onePlayersPieces(model.getNextPlayer())
+                .forEach(piece -> {
+                    piece.setPossibleMoves(currentPieces);
+                    if (piece instanceof Pawn)
+                        ((Pawn) piece).removeStraightMoves();
+                });
     }
 
     /**
-     * see if after any legal move, the king would be in check<br>
-     * this solves the edge case of taking a defended opponent<br>
-     * opponent moves are recalculated for every opponent next to the king<br>
-     *
+     * set all legal (no self-check) moves for current player
+     */
+    private void updateCurrentPlayerMoves(ChessPieceList currentPieces) {
+        model.onePlayersPieces(model.getCurrentPlayer())
+                .forEach(piece -> piece.setLegalMoves(currentPieces));
+    }
+
+    /**
+     * see if after taking any opponent, the king would be in check<br>
+     * opponent moves are recalculated for every opponent next to the king
      * @param king the current king
      */
     private void preventSelfCheck(ChessPiece king) {
         ChessPieceList currentPieces = model.getChessPieces();
-
-        ChessPieceList opponentPawns = currentPieces.findPieces(Pawn.class, model.getNextPlayer());
-        opponentPawns.forEach(piece -> {
-            Pawn pawn = (Pawn) piece;
-            pawn.removeStraightMoves();
-        });
-
-        king.setLegalMoves(currentPieces);
 
         var nextToKing = king.getPossibleMoves().stream()
                 .filter(position -> currentPieces.getPiece(position) != null).toList();
@@ -192,10 +191,6 @@ public class GameController {
         }
 
         updateNextPlayerMoves(currentPieces);
-        opponentPawns.forEach(piece -> {
-            Pawn pawn = (Pawn) piece;
-            pawn.removeStraightMoves();
-        });
         currentPieces.add(king);
     }
 
