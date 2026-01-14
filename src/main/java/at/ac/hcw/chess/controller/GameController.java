@@ -176,18 +176,22 @@ public class GameController {
         Position piece = new Position(fenMove.substring(0, 2));
         model.selectPiece(piece);
         Position target = new Position(fenMove.substring(2, 4));
-        view.chessBoardChildNode(target, Node.class).fireEvent(new MouseEvent(
-                MouseEvent.MOUSE_CLICKED,
-                0, 0,
-                0, 0,
-                MouseButton.PRIMARY,
-                1,
-                false, false, false, false,
-                true,
-                false, false, false, false,
-                true,
-                null
-        ));
+        if (model.getSelectedPiece() != null && model.getSelectedPiece().getPossibleMoves().contains(target)) {
+            view.chessBoardChildNode(target, Node.class).fireEvent(new MouseEvent(
+                    MouseEvent.MOUSE_CLICKED,
+                    0, 0,
+                    0, 0,
+                    MouseButton.PRIMARY,
+                    1,
+                    false, false, false, false,
+                    true,
+                    false, false, false, false,
+                    true,
+                    null
+            ));
+        } else {
+            throw new IndexOutOfBoundsException("invalid move by bot!");
+        }
     }
 
     /**

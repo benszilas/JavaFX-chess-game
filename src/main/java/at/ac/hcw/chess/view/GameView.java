@@ -241,17 +241,22 @@ public class GameView implements Builder<Region> {
     }
 
     public void showBotError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setHeaderText("Bot move");
         alert.setContentText(message);
-        ButtonType retry = new ButtonType("Retry getting bot move", ButtonBar.ButtonData.APPLY);
+        ButtonType ok = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        ButtonType retry = new ButtonType("Retry", ButtonBar.ButtonData.APPLY);
+        ButtonType back = new ButtonType("Back to menu", ButtonBar.ButtonData.BACK_PREVIOUS);
 
-        alert.getButtonTypes().add(retry);
+        alert.getButtonTypes().addAll(ok, retry, back);
 
         Optional<ButtonType> result = alert.showAndWait();
 
-        if (result.isPresent() && result.get() == retry)
-            controller.getBotMove();
+        if (result.isPresent()) {
+            if (result.get() == retry) controller.getBotMove();
+            else if (result.get() == back) board.fireEvent(new GameEndedEvent());
+        }
+
     }
 
     private ImageView createPieceView(ChessPiece piece) {
