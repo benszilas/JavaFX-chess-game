@@ -7,11 +7,7 @@ import at.ac.hcw.chess.model.utils.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -55,10 +51,16 @@ public class GameView implements Builder<Region> {
 
         board = new GridPane();
         setupGridConstraints(board);
+        board.maxWidthProperty().bind(board.heightProperty());
 
         StackPane boardContainer = new StackPane(board);
         boardContainer.getStyleClass().add("board-container");
-        boardContainer.maxWidthProperty().bind(boardContainer.heightProperty());
+
+        ScrollPane boardScroll = new ScrollPane(boardContainer);
+        boardScroll.setFitToWidth(true);
+        boardScroll.setFitToHeight(true);
+        boardScroll.setPannable(true);
+        boardScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         // Create side panels for captured pieces
         capturedWhitePanel = createCapturedPiecesPanel("Geschlagen", "Weiß");
@@ -77,14 +79,11 @@ public class GameView implements Builder<Region> {
         exitButton.getStyleClass().add("exit-button");
         exitButton.setOnAction(e -> exitCallback.run());
 
-        HBox bottomBar = new HBox(exitButton);
-        bottomBar.setAlignment(Pos.CENTER_RIGHT);
-        bottomBar.setPadding(new Insets(15, 0, 0, 0));
+        leftWrapper.getChildren().add(exitButton);
 
-        root.setCenter(boardContainer);
+        root.setCenter(boardScroll);
         root.setLeft(leftWrapper);
         root.setRight(rightWrapper);
-        root.setBottom(bottomBar);
         redraw();
         return root;
     }
