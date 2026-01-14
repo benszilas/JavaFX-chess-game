@@ -21,10 +21,6 @@ public class GameController {
     private final Runnable exitCallback;
     private ChessApiClient client = null;
 
-    public GameController() {
-        this(() -> {});
-    }
-
     public GameController(Runnable exitCallback) {
         this.exitCallback = exitCallback;
         model = new GameModel();
@@ -150,29 +146,48 @@ public class GameController {
         System.out.println(model + System.lineSeparator());
     }
 
-    private void getBotMove() {
+    /**
+     * request API for the best move of the current player, if current player is the bot.
+     * offer retry upon timeout or upon invalid move.
+     */
+    public void getBotMove() {
         if (this.client != null && model.getCurrentPlayer() == model.getBot()) {
-            client.request(model.toString());
+            try {
+                client.request(model.toString());
+            } catch (Exception ignore) {
+                view.showBotError("Bot might be offline or you might have lost connection.");
+                return;
+            }
             System.out.println(client.getText());
             System.out.println(client.getMove());
             System.out.println(client.getPromotion());
 
-            Position piece = new Position(client.getMove().substring(0, 2));
-            model.selectPiece(piece);
-            Position target = new Position(client.getMove().substring(2, 4));
-            view.chessBoardChildNode(target, Node.class).fireEvent(new MouseEvent(
-                    MouseEvent.MOUSE_CLICKED,
-                    0, 0,          // x, y
-                    0, 0,          // screenX, screenY
-                    MouseButton.PRIMARY,
-                    1,             // click count
-                    false, false, false, false, // modifier keys
-                    true,          // primary button down
-                    false, false, false, false, // middle/right/back/forward
-                    true,          // synthesized
-                    null          // still since press
-            ));
+            if (model.getCurrentPlayer() == model.getBot()) {
+                try {
+                    makeBotMove(client.getMove());
+                } catch (IndexOutOfBoundsException e) {
+                    view.showBotError("Can't make bot move or bot might be offline.");
+                }
+            }
         }
+    }
+
+    private void makeBotMove(String fenMove) {
+        Position piece = new Position(fenMove.substring(0, 2));
+        model.selectPiece(piece);
+        Position target = new Position(fenMove.substring(2, 4));
+        view.chessBoardChildNode(target, Node.class).fireEvent(new MouseEvent(
+                MouseEvent.MOUSE_CLICKED,
+                0, 0,
+                0, 0,
+                MouseButton.PRIMARY,
+                1,
+                false, false, false, false,
+                true,
+                false, false, false, false,
+                true,
+                null
+        ));
     }
 
     /**
@@ -215,6 +230,7 @@ public class GameController {
     /**
      * see if after taking any opponent, the king would be in check<br>
      * opponent moves are recalculated for every opponent next to the king
+     *
      * @param king the current king
      */
     private void preventSelfCheck(ChessPiece king) {

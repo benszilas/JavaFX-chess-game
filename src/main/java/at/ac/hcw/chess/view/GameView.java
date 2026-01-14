@@ -21,6 +21,7 @@ import at.ac.hcw.chess.model.utils.ChessPieceList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class GameView implements Builder<Region> {
 
@@ -237,6 +238,20 @@ public class GameView implements Builder<Region> {
 
         alert.setGraphic(content);
         alert.showAndWait();
+    }
+
+    public void showBotError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText("Bot move");
+        alert.setContentText(message);
+        ButtonType retry = new ButtonType("Retry getting bot move", ButtonBar.ButtonData.APPLY);
+
+        alert.getButtonTypes().add(retry);
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent() && result.get() == retry)
+            controller.getBotMove();
     }
 
     private ImageView createPieceView(ChessPiece piece) {

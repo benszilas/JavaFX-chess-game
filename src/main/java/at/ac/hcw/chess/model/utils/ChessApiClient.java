@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
+import java.time.Duration;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 
@@ -33,7 +35,8 @@ public class ChessApiClient {
      *
      * @param fen the FEN notation of chess position
      */
-    public void request(String fen) throws CompletionException, CancellationException {
+    public void request(String fen) throws CompletionException, CancellationException, HttpTimeoutException {
+        resetAttributes();
         String requestBody = """
                 {
                     "fen": "%s",
@@ -46,18 +49,28 @@ public class ChessApiClient {
                     .uri(URI.create(baseUrl))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .timeout(Duration.ofSeconds(10))
                     .build();
             HttpResponse<String> response =
                     client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() / 100 != 2) {
-                throw new RuntimeException("HTTP error: " + response.statusCode());
+                System.err.println("HTTP error: " + response.statusCode());
             }
 
             parseResponse(response.body());
+        } catch (HttpTimeoutException e) {
+            System.err.println("timeout after " + e);
+            throw e;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void resetAttributes() {
+        text = "";
+        move = "";
+        promotion = "";
     }
 
     private void parseResponse(String json) {
