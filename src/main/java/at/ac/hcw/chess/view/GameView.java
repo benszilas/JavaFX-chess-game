@@ -56,12 +56,6 @@ public class GameView implements Builder<Region> {
         StackPane boardContainer = new StackPane(board);
         boardContainer.getStyleClass().add("board-container");
 
-        ScrollPane boardScroll = new ScrollPane(boardContainer);
-        boardScroll.setFitToWidth(true);
-        boardScroll.setFitToHeight(true);
-        boardScroll.setPannable(true);
-        boardScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
         // Create side panels for captured pieces
         capturedWhitePanel = createCapturedPiecesPanel("Geschlagen", "Weiß");
         capturedBlackPanel = createCapturedPiecesPanel("Geschlagen", "Schwarz");
@@ -81,7 +75,7 @@ public class GameView implements Builder<Region> {
 
         leftWrapper.getChildren().add(exitButton);
 
-        root.setCenter(boardScroll);
+        root.setCenter(boardContainer);
         root.setLeft(leftWrapper);
         root.setRight(rightWrapper);
         redraw();
