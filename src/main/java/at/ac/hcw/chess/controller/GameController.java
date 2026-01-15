@@ -8,7 +8,6 @@ import at.ac.hcw.chess.model.utils.*;
 import at.ac.hcw.chess.view.GameView;
 import javafx.event.Event;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -379,23 +378,16 @@ public class GameController {
      * the next player is the winner
      */
     private void emitCheckmateEvent() {
-        Color winner = (model.getCurrentPlayer() == Color.WHITE) ? Color.BLACK : Color.WHITE;
-        showResult("Checkmate!", winner.name() + " has beaten " + model.getCurrentPlayer().name() + " by checkmate!");
+        view.showResult("Checkmate!", model.getNextPlayer().name() + " has beaten " + model.getCurrentPlayer().name() + " by checkmate!");
     }
 
     private void emitDrawEvent(String message) {
-        showResult("The game is a draw!", message);
+        view.showResult("The game is a draw!", message);
     }
 
-    private void showResult(String title, String message) {
-        view.getBoard().setDisable(true);
-        System.out.println(model);
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Game Over");
-        alert.setHeaderText(title);
-        alert.setContentText(message);
-        alert.showAndWait();
-        view.getBoard().fireEvent(new GameEndedEvent());
+    public void resetSelection() {
+        model.customGame(PopulateBoard.classicGameBoard());
+        client = null;
     }
 
     private void lookForDraw() {

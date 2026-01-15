@@ -4,6 +4,12 @@ import at.ac.hcw.chess.controller.GameController;
 import at.ac.hcw.chess.model.GameModel;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
 import at.ac.hcw.chess.model.utils.*;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableIntegerValue;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -51,34 +57,34 @@ public class GameView implements Builder<Region> {
 
         board = new GridPane();
         setupGridConstraints(board);
-        board.maxWidthProperty().bind(board.heightProperty());
 
         StackPane boardContainer = new StackPane(board);
         boardContainer.getStyleClass().add("board-container");
+        boardContainer.maxWidthProperty().bind(boardContainer.heightProperty());
 
         // Create side panels for captured pieces
-        capturedWhitePanel = createCapturedPiecesPanel("Geschlagen", "Weiß");
-        capturedBlackPanel = createCapturedPiecesPanel("Geschlagen", "Schwarz");
+        capturedWhitePanel = createCapturedPiecesPanel("Captured pieces", "White");
+        capturedBlackPanel = createCapturedPiecesPanel("Captured pieces", "Black");
 
         VBox leftWrapper = new VBox(capturedWhitePanel);
         leftWrapper.setAlignment(Pos.CENTER);
         leftWrapper.setPadding(new Insets(0, 15, 0, 0));
+        leftWrapper.getChildren().add(createExitButton(Color.WHITE));
 
         VBox rightWrapper = new VBox(capturedBlackPanel);
         rightWrapper.setAlignment(Pos.CENTER);
         rightWrapper.setPadding(new Insets(0, 0, 0, 15));
+        rightWrapper.getChildren().add(createExitButton(Color.BLACK));
 
-        // Create exit button in bottom-right
-        Button exitButton = new Button("Beenden");
-        exitButton.getStyleClass().add("exit-button");
-        exitButton.setOnAction(e -> exitCallback.run());
-
-        leftWrapper.getChildren().add(exitButton);
+        Button exitButton = createExitButton(null);
 
         root.setCenter(boardContainer);
         root.setLeft(leftWrapper);
         root.setRight(rightWrapper);
         redraw();
+
+        board.getChildren().addLast(exitButton);
+        GridPane.setConstraints(exitButton, UI_SIZE - 1, UI_SIZE - 1);
         return root;
     }
 
@@ -252,6 +258,34 @@ public class GameView implements Builder<Region> {
 
     }
 
+    public void showResult(String title, String message) {
+        board.setDisable(true);
+        System.out.println(model);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Over");
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+        board.fireEvent(new GameEndedEvent());
+    }
+
+    private Button createExitButton(Color resigned) {
+        String title = (resigned == null) ? "Exit": "Resign for " + resigned.name();
+        Button exitButton = new Button(title);
+
+        if (resigned == null)
+            exitButton.setOnAction(e -> exitCallback.run());
+        else {
+            exitButton.setOnAction(e -> {
+                showResult("Resignation", resigned.name() + " has resigned!");
+            });
+        }
+
+        exitButton.setAlignment(Pos.BOTTOM_CENTER);
+        exitButton.getStyleClass().add("exit-button");
+        return exitButton;
+    }
+
     private ImageView createPieceView(ChessPiece piece) {
         String color = piece.getColor() == Color.WHITE ? "white" : "black";
         String type = piece.getClass().getSimpleName().toLowerCase();
@@ -306,17 +340,10 @@ public class GameView implements Builder<Region> {
     }
 
     private ImageView createCapturedPieceView(ChessPiece piece) {
-        String color = piece.getColor() == Color.WHITE ? "white" : "black";
-        String type = piece.getClass().getSimpleName().toLowerCase();
-        String path = "/images/" + color + "_" + type + ".png";
+        ImageView view = createPieceView(piece);
 
-        ImageView view = new ImageView(
-                new Image(Objects.requireNonNull(getClass().getResource(path)).toExternalForm())
-        );
-
-        view.setPreserveRatio(true);
-        view.setFitWidth(35);
-        view.setFitHeight(35);
+        view.fitWidthProperty().bind(new SimpleIntegerProperty(35));
+        view.fitWidthProperty().bind(new SimpleIntegerProperty(35));
         view.getStyleClass().add("captured-piece-view");
 
         return view;
