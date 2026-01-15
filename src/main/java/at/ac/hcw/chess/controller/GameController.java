@@ -7,6 +7,7 @@ import at.ac.hcw.chess.model.chessPieces.Pawn;
 import at.ac.hcw.chess.model.utils.*;
 import at.ac.hcw.chess.view.GameView;
 import javafx.event.Event;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -19,6 +20,7 @@ public class GameController {
     private final GameView view;
     private final Runnable exitCallback;
     private ChessApiClient client = null;
+    private boolean botResignOff = false;
 
     public GameController(Runnable exitCallback) {
         this.exitCallback = exitCallback;
@@ -38,6 +40,7 @@ public class GameController {
     public void addBot(Color color, int depth) {
         client = new ChessApiClient(depth);
         model.setBot(color);
+        botResignOff = false;
     }
 
     public Region getView() {
@@ -137,6 +140,8 @@ public class GameController {
         model.changePlayer();
         removeHighlight(model.getSelectedPiece());
         model.selectPiece((ChessPiece) null);
+        view.setCursorForPieceViews(model.onePlayersPieces(model.getCurrentPlayer()), Cursor.HAND);
+        view.setCursorForPieceViews(model.onePlayersPieces(model.getNextPlayer()), Cursor.DEFAULT);
     }
 
     private void printTurn() {
@@ -150,6 +155,10 @@ public class GameController {
      * offer retry upon timeout or upon invalid move.
      */
     public void getBotMove() {
+        if (this.client != null && !botResignOff) {
+            view.disableButton(model.getBot());
+            botResignOff = true;
+        }
         if (this.client != null && model.getCurrentPlayer() == model.getBot()) {
             try {
                 client.request(model.toString());

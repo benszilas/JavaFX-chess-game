@@ -7,11 +7,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.util.Builder;
 
 import java.util.Objects;
@@ -19,6 +18,7 @@ import java.util.Objects;
 public class MenuView implements Builder<Region> {
     private final MenuController controller;
     private final MenuType type;
+
     public enum MenuType {
         MAIN_MENU,
         GAME_MENU
@@ -57,17 +57,17 @@ public class MenuView implements Builder<Region> {
         return root;
     }
 
-    private ObservableList<Button> mainMenuButtons() {
-        Button vsPlayerBtn = createMenuButton("Classic game");
+    private ObservableList<Node> mainMenuButtons() {
+        Button vsPlayerBtn = createMenuButton("Classic chess");
         vsPlayerBtn.setOnAction(e -> controller.showGameMenu());
 
-        Button demoBtn = createMenuButton("Endgame Demo");
+        Button demoBtn = createMenuButton("Demo: mate-in-1");
         demoBtn.setOnAction(e -> {
             controller.showGameMenu();
             controller.selectGame(PopulateBoard.mateInOne1());
         });
 
-        Button noPawns = createMenuButton("Test without pawns");
+        Button noPawns = createMenuButton("Demo: lost pawns");
         noPawns.setOnAction(e -> {
             controller.showGameMenu();
             controller.selectGame(PopulateBoard.noPawnsBoard());
@@ -79,7 +79,33 @@ public class MenuView implements Builder<Region> {
         return FXCollections.observableArrayList(vsPlayerBtn, demoBtn, noPawns, exitBtn);
     }
 
-    private ObservableList<Button> gameMenuButtons() {
+    private ObservableList<Node> gameMenuButtons() {
+        Slider depthSlider = new Slider(1, 10, 5);
+        depthSlider.setMajorTickUnit(1);
+        depthSlider.setMinorTickCount(0);
+        depthSlider.getStyleClass().add("menu-slider");
+
+        Label depthLabel = new Label("Bot depth: 5");
+        depthSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            depthLabel.setText("Bot depth: " + newVal.intValue());
+        });
+        depthLabel.getStyleClass().add("menu-label");
+
+        ToggleButton botColorButton = new ToggleButton();
+        botColorButton.getStyleClass().add("menu-toggle");
+
+        Label botColorLabel = new Label("Bot color: black");
+        botColorButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            String color = (newValue) ? "white" : "black";
+            botColorLabel.setText("Bot color: " + color);
+        });
+        botColorLabel.getStyleClass().add("menu-label");
+
+        VBox botSettings = new VBox();
+        botSettings.setAlignment(Pos.CENTER);
+        botSettings.getChildren().addAll(depthLabel, depthSlider, botColorLabel, botColorButton);
+        botSettings.getStyleClass().add("menu-tile-button");
+
         Button backBtn = createMenuButton("Back");
         backBtn.setOnAction(e -> controller.showMainMenu());
 
@@ -88,11 +114,11 @@ public class MenuView implements Builder<Region> {
 
         Button vsBotBtn = createMenuButton("Play against a bot");
         vsBotBtn.setOnAction(e -> {
-            controller.addBot(Color.BLACK, 10);
+            controller.addBot(botColorButton.isSelected(), depthSlider.valueProperty().intValue());
             controller.startGame();
         });
 
-        return FXCollections.observableArrayList(vsFriendBtn, vsBotBtn, backBtn);
+        return FXCollections.observableArrayList(vsFriendBtn, vsBotBtn, botSettings, backBtn);
     }
 
     private Button createMenuButton(String text) {

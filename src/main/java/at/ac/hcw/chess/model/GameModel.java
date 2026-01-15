@@ -17,7 +17,7 @@ public class GameModel {
     private Color nextPlayer;
     private int fullMoves = 1;
     private int halfMoves = 0;
-    private String castles = "";
+    private String castles = "-";
     private Color bot;
 
     public GameModel() {

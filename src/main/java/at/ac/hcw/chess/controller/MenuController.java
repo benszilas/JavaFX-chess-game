@@ -50,6 +50,7 @@ public class MenuController {
 
     public void startGame() {
         Region gameRoot = gameController.getView();
+        gameController.getBotMove();
         Scene gameScene = new Scene(gameRoot, screenWidth, screenHeight);
         stage.setTitle("Chess game");
         stage.setScene(gameScene);
@@ -64,7 +65,8 @@ public class MenuController {
         }
     }
 
-    public void addBot(Color color, int depth) {
+    public void addBot(boolean white, int depth) {
+        Color color = (white) ? Color.WHITE : Color.BLACK;
         gameController.addBot(color, depth);
     }
 

@@ -12,6 +12,7 @@ import javafx.beans.value.ObservableIntegerValue;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -34,6 +35,7 @@ public class GameView implements Builder<Region> {
     private final GameController controller;
     private final Runnable exitCallback;
 
+    private BorderPane rootNode;
     private GridPane board;
     private VBox capturedWhitePanel;
     private VBox capturedBlackPanel;
@@ -56,11 +58,13 @@ public class GameView implements Builder<Region> {
         root.setPadding(new Insets(20));
 
         board = new GridPane();
-        setupGridConstraints(board);
 
         StackPane boardContainer = new StackPane(board);
         boardContainer.getStyleClass().add("board-container");
         boardContainer.maxWidthProperty().bind(boardContainer.heightProperty());
+        setupGridConstraints(board);
+        drawBoard();
+        drawPieces();
 
         // Create side panels for captured pieces
         capturedWhitePanel = createCapturedPiecesPanel("Captured pieces", "White");
@@ -77,22 +81,15 @@ public class GameView implements Builder<Region> {
         rightWrapper.getChildren().add(createExitButton(Color.BLACK));
 
         Button exitButton = createExitButton(null);
+        board.getChildren().addLast(exitButton);
+        GridPane.setConstraints(exitButton, UI_SIZE - 1, UI_SIZE - 1);
 
         root.setCenter(boardContainer);
         root.setLeft(leftWrapper);
         root.setRight(rightWrapper);
-        redraw();
 
-        board.getChildren().addLast(exitButton);
-        GridPane.setConstraints(exitButton, UI_SIZE - 1, UI_SIZE - 1);
+        rootNode = root;
         return root;
-    }
-
-    public void redraw() {
-        board.getChildren().clear();
-        pieceViews.clear();
-        drawBoard();
-        drawPieces();
     }
 
     public GridPane getBoard() {
@@ -202,7 +199,8 @@ public class GameView implements Builder<Region> {
         for (ChessPiece piece : model.getChessPieces()) {
             Node view = createPieceView(piece);
             view.setOnMouseClicked(controller::clickChessBoard);
-            view.getStyleClass().add("chess-piece");
+            if (piece.getColor() == Color.WHITE)
+                view.setCursor(Cursor.HAND);
             pieceViews.add(view);
             board.add(view, piece.getPosition().getColumn(), piece.getPosition().getRow());
         }
@@ -270,7 +268,7 @@ public class GameView implements Builder<Region> {
     }
 
     private Button createExitButton(Color resigned) {
-        String title = (resigned == null) ? "Exit": "Resign for " + resigned.name();
+        String title = (resigned == null) ? "Exit" : "Resign for " + resigned.name();
         Button exitButton = new Button(title);
 
         if (resigned == null)
@@ -287,7 +285,7 @@ public class GameView implements Builder<Region> {
     }
 
     private ImageView createPieceView(ChessPiece piece) {
-        String color = piece.getColor() == Color.WHITE ? "white" : "black";
+        String color = piece.getColor().name().toLowerCase();
         String type = piece.getClass().getSimpleName().toLowerCase();
         String path = "/images/" + color + "_" + type + ".png";
 
@@ -359,5 +357,18 @@ public class GameView implements Builder<Region> {
             row.setPercentHeight(100.0 / UI_SIZE);
             grid.getRowConstraints().add(row);
         }
+    }
+
+    public void setCursorForPieceViews(ChessPieceList pieces, Cursor cursor) {
+        pieces.forEach(piece -> {
+            chessBoardChildNode(piece.getPosition(), ImageView.class).setCursor(cursor);
+        });
+    }
+
+    public void disableButton(Color color) {
+        if (color == Color.BLACK)
+            rootNode.getRight().setDisable(true);
+        else if (color == Color.WHITE)
+            rootNode.getLeft().setDisable(true);
     }
 }
