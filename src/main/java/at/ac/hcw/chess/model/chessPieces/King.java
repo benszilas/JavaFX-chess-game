@@ -43,22 +43,28 @@ public class King extends ChessPiece {
      *
      * @param piecesOnBoard current pieces
      * @param range         list of moves including the potential friendly rook
+     * @return "K" or "k" for kingside, "Q" or "q" for queenside castle, "-" for no castle
      */
-    public void tryAddCastleMove(ChessPieceList piecesOnBoard, MoveList range) {
+    public String tryAddCastleMove(ChessPieceList piecesOnBoard, MoveList range) {
         ChessPiece neighbor = piecesOnBoard.getPiece(range.getLast());
         Color opponent = (color == Color.WHITE) ? Color.BLACK : Color.WHITE;
 
-        if (!(neighbor instanceof Rook) || neighbor.getColor() == opponent) return;
-        if (this.hasMoved() || neighbor.hasMoved()) return;
+        if (!(neighbor instanceof Rook) || neighbor.getColor() == opponent) return "-";
+        if (this.hasMoved() || neighbor.hasMoved()) return "-";
 
         Set<Position> opponentMoves = new LinkedHashSet<>();
         for (ChessPiece opponentPiece : piecesOnBoard.findPieces(ChessPiece.class, opponent)) {
             opponentMoves.addAll(opponentPiece.getPossibleMoves());
         }
         if (opponentMoves.contains(range.get(0)) || opponentMoves.contains(range.get(1)))
-            return;
+            return "-";
 
         this.possibleMoves.add(range.get(1));
+        if (range.get(1).getColumn() < position.getColumn()) {
+            return this.color == Color.WHITE ? "Q" : "q";
+        } else {
+            return this.color == Color.WHITE ? "K" : "k";
+        }
     }
 
     @Override
@@ -89,7 +95,7 @@ public class King extends ChessPiece {
     @Override
     public String toString() {
         if (this.getColor() == Color.WHITE)
-            return "♔";
-        return "♚";
+            return "K";
+        return "k";
     }
 }

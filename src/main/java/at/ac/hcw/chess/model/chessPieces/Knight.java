@@ -36,7 +36,7 @@ public class Knight extends ChessPiece {
     @Override
     public String toString() {
         if (this.getColor() == Color.WHITE)
-            return "♘";
-        return "♞";
+            return "N";
+        return "n";
     }
 }

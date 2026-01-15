@@ -2,6 +2,8 @@ module at.ac.hcw.chess {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.desktop;
+    requires java.net.http;
+    requires javafx.base;
 
     opens at.ac.hcw.chess to javafx.fxml;
     exports at.ac.hcw.chess;

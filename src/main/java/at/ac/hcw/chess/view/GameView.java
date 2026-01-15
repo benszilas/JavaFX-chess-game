@@ -4,14 +4,17 @@ import at.ac.hcw.chess.controller.GameController;
 import at.ac.hcw.chess.model.GameModel;
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
 import at.ac.hcw.chess.model.utils.*;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableIntegerValue;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -21,6 +24,7 @@ import at.ac.hcw.chess.model.utils.ChessPieceList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class GameView implements Builder<Region> {
 
@@ -31,6 +35,7 @@ public class GameView implements Builder<Region> {
     private final GameController controller;
     private final Runnable exitCallback;
 
+    private BorderPane rootNode;
     private GridPane board;
     private VBox capturedWhitePanel;
     private VBox capturedBlackPanel;
@@ -53,46 +58,38 @@ public class GameView implements Builder<Region> {
         root.setPadding(new Insets(20));
 
         board = new GridPane();
-        setupGridConstraints(board);
 
         StackPane boardContainer = new StackPane(board);
         boardContainer.getStyleClass().add("board-container");
         boardContainer.maxWidthProperty().bind(boardContainer.heightProperty());
+        setupGridConstraints(board);
+        drawBoard();
+        drawPieces();
 
         // Create side panels for captured pieces
-        capturedWhitePanel = createCapturedPiecesPanel("Geschlagen", "Weiß");
-        capturedBlackPanel = createCapturedPiecesPanel("Geschlagen", "Schwarz");
+        capturedWhitePanel = createCapturedPiecesPanel("Captured pieces", "White");
+        capturedBlackPanel = createCapturedPiecesPanel("Captured pieces", "Black");
 
         VBox leftWrapper = new VBox(capturedWhitePanel);
         leftWrapper.setAlignment(Pos.CENTER);
         leftWrapper.setPadding(new Insets(0, 15, 0, 0));
+        leftWrapper.getChildren().add(createExitButton(Color.WHITE));
 
         VBox rightWrapper = new VBox(capturedBlackPanel);
         rightWrapper.setAlignment(Pos.CENTER);
         rightWrapper.setPadding(new Insets(0, 0, 0, 15));
+        rightWrapper.getChildren().add(createExitButton(Color.BLACK));
 
-        // Create exit button in bottom-right
-        Button exitButton = new Button("Beenden");
-        exitButton.getStyleClass().add("exit-button");
-        exitButton.setOnAction(e -> exitCallback.run());
-
-        HBox bottomBar = new HBox(exitButton);
-        bottomBar.setAlignment(Pos.CENTER_RIGHT);
-        bottomBar.setPadding(new Insets(15, 0, 0, 0));
+        Button exitButton = createExitButton(null);
+        board.getChildren().addLast(exitButton);
+        GridPane.setConstraints(exitButton, UI_SIZE - 1, UI_SIZE - 1);
 
         root.setCenter(boardContainer);
         root.setLeft(leftWrapper);
         root.setRight(rightWrapper);
-        root.setBottom(bottomBar);
-        redraw();
-        return root;
-    }
 
-    public void redraw() {
-        board.getChildren().clear();
-        pieceViews.clear();
-        drawBoard();
-        drawPieces();
+        rootNode = root;
+        return root;
     }
 
     public GridPane getBoard() {
@@ -202,7 +199,8 @@ public class GameView implements Builder<Region> {
         for (ChessPiece piece : model.getChessPieces()) {
             Node view = createPieceView(piece);
             view.setOnMouseClicked(controller::clickChessBoard);
-            view.getStyleClass().add("chess-piece");
+            if (piece.getColor() == Color.WHITE)
+                view.setCursor(Cursor.HAND);
             pieceViews.add(view);
             board.add(view, piece.getPosition().getColumn(), piece.getPosition().getRow());
         }
@@ -239,8 +237,55 @@ public class GameView implements Builder<Region> {
         alert.showAndWait();
     }
 
+    public void showBotError(String message) {
+        Alert alert = new Alert(Alert.AlertType.NONE);
+        alert.setHeaderText("Bot move");
+        alert.setContentText(message);
+        ButtonType ok = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        ButtonType retry = new ButtonType("Retry", ButtonBar.ButtonData.APPLY);
+        ButtonType back = new ButtonType("Back to menu", ButtonBar.ButtonData.BACK_PREVIOUS);
+
+        alert.getButtonTypes().addAll(ok, retry, back);
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent()) {
+            if (result.get() == retry) controller.getBotMove();
+            else if (result.get() == back) board.fireEvent(new GameEndedEvent());
+        }
+
+    }
+
+    public void showResult(String title, String message) {
+        board.setDisable(true);
+        System.out.println(model);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Over");
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+        board.fireEvent(new GameEndedEvent());
+    }
+
+    private Button createExitButton(Color resigned) {
+        String title = (resigned == null) ? "Exit" : "Resign for " + resigned.name();
+        Button exitButton = new Button(title);
+
+        if (resigned == null)
+            exitButton.setOnAction(e -> exitCallback.run());
+        else {
+            exitButton.setOnAction(e -> {
+                showResult("Resignation", resigned.name() + " has resigned!");
+            });
+        }
+
+        exitButton.setAlignment(Pos.BOTTOM_CENTER);
+        exitButton.getStyleClass().add("exit-button");
+        return exitButton;
+    }
+
     private ImageView createPieceView(ChessPiece piece) {
-        String color = piece.getColor() == Color.WHITE ? "white" : "black";
+        String color = piece.getColor().name().toLowerCase();
         String type = piece.getClass().getSimpleName().toLowerCase();
         String path = "/images/" + color + "_" + type + ".png";
 
@@ -293,17 +338,10 @@ public class GameView implements Builder<Region> {
     }
 
     private ImageView createCapturedPieceView(ChessPiece piece) {
-        String color = piece.getColor() == Color.WHITE ? "white" : "black";
-        String type = piece.getClass().getSimpleName().toLowerCase();
-        String path = "/images/" + color + "_" + type + ".png";
+        ImageView view = createPieceView(piece);
 
-        ImageView view = new ImageView(
-                new Image(Objects.requireNonNull(getClass().getResource(path)).toExternalForm())
-        );
-
-        view.setPreserveRatio(true);
-        view.setFitWidth(35);
-        view.setFitHeight(35);
+        view.fitWidthProperty().bind(new SimpleIntegerProperty(35));
+        view.fitWidthProperty().bind(new SimpleIntegerProperty(35));
         view.getStyleClass().add("captured-piece-view");
 
         return view;
@@ -319,5 +357,18 @@ public class GameView implements Builder<Region> {
             row.setPercentHeight(100.0 / UI_SIZE);
             grid.getRowConstraints().add(row);
         }
+    }
+
+    public void setCursorForPieceViews(ChessPieceList pieces, Cursor cursor) {
+        pieces.forEach(piece -> {
+            chessBoardChildNode(piece.getPosition(), ImageView.class).setCursor(cursor);
+        });
+    }
+
+    public void disableButton(Color color) {
+        if (color == Color.BLACK)
+            rootNode.getRight().setDisable(true);
+        else if (color == Color.WHITE)
+            rootNode.getLeft().setDisable(true);
     }
 }

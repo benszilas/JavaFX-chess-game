@@ -12,8 +12,7 @@ public class Rook extends ChessPiece {
 
     @Override
     public String toString() {
-        // Returns the unicode chess character for console display
-        return (this.getColor() == Color.WHITE) ? "♖" : "♜";
+        return (this.getColor() == Color.WHITE) ? "R" : "r";
     }
 
     @Override

@@ -56,10 +56,6 @@
    CHESS PIECES
    ========================= */
 
-.chess-piece {
-    -fx-cursor: hand;
-}
-
 .selected-piece {
     -fx-effect: dropshadow(gaussian, #f1c40f, 25, 0.7, 0, 0);
 }
@@ -112,7 +108,7 @@
     -fx-background-radius: 10;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 2, 2);
-    -fx-padding: 15 40;
+    -fx-padding: 20 20;
 }
 
 .exit-button:hover {

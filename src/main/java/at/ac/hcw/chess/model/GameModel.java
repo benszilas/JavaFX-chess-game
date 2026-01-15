@@ -15,6 +15,10 @@ public class GameModel {
     private final ArrayList<MoveRecord> moveHistory;
     private Color currentPlayer;
     private Color nextPlayer;
+    private int fullMoves = 1;
+    private int halfMoves = 0;
+    private String castles = "-";
+    private Color bot;
 
     public GameModel() {
         this.chessPieces = PopulateBoard.classicGameBoard();
@@ -38,6 +42,15 @@ public class GameModel {
 
     public ChessPieceList getChessPieces() {
         return chessPieces;
+    }
+
+    public ChessPieceList onePlayersPieces(Color color) {
+        ChessPieceList list = new ChessPieceList();
+        chessPieces.forEach(chessPiece -> {
+            if (chessPiece.getColor() == color)
+                list.add(chessPiece);
+        });
+        return list;
     }
 
     public ArrayList<ChessPiece> getPromotablePieces() {
@@ -75,6 +88,10 @@ public class GameModel {
         this.selectedPiece = chessPieces.getPiece(position);
     }
 
+    public void addCastle(String fenNotation) {
+        this.castles = this.castles + fenNotation;
+    }
+
     public ArrayList<MoveRecord> getMoveHistory() {
         return moveHistory;
     }
@@ -87,10 +104,21 @@ public class GameModel {
         return nextPlayer;
     }
 
+    public void setBot(Color bot) {
+        this.bot = bot;
+    }
+
+    public Color getBot() {
+        return bot;
+    }
+
     public void changePlayer() {
         Color color = currentPlayer;
         currentPlayer = nextPlayer;
         nextPlayer = color;
+        halfMoves++;
+        if ((halfMoves & 1) == 0) fullMoves++;
+        this.castles = "-";
     }
 
     private ChessPiece[][] _2DBoard() {
@@ -104,29 +132,41 @@ public class GameModel {
         return board;
     }
 
-    private void printChessBoardLine(ChessPiece[][] board, StringBuilder charBoard, int row) {
-        charBoard.append(row + 1);
+    private void printChessBoardLine(ChessPiece[][] board, StringBuilder fenString, int row) {
+        int gap = 0;
         for (int column = 0; column < 8; column++) {
             if (board[row][column] != null) {
-                charBoard.append(board[row][column].toString());
-            } else if ((row + column & 0x1) == 0) {
-                charBoard.append("□");
+                if (gap != 0) {
+                    fenString.append(gap);
+                    gap = 0;
+                }
+                fenString.append(board[row][column].toString());
             } else {
-                charBoard.append("■");
+                gap++;
             }
         }
-        charBoard.append(row + 1);
-        charBoard.append(System.lineSeparator());
+        if (gap != 0) fenString.append(gap);
+        fenString.append("/");
     }
 
+    /**
+     * @return the FEN notation of the current chess position as single line string
+     */
     @Override
     public String toString() {
+        String unusedFenString = " - 0 ";
         ChessPiece[][] board = _2DBoard();
-        StringBuilder charBoard = new StringBuilder(" ABCDEFGH " + System.lineSeparator());
-        for (int row = 0; row < 8; row++) {
-            printChessBoardLine(board, charBoard, row);
+        StringBuilder fenString = new StringBuilder();
+        for (int row = Position.MAX - 1; row >= 0; row--) {
+            printChessBoardLine(board, fenString, row);
         }
-        charBoard.append(" ABCDEFGH ");
-        return charBoard.toString();
+        fenString.deleteCharAt(fenString.lastIndexOf("/"));
+        fenString.append(" ");
+        fenString.append(currentPlayer.toString().toLowerCase().charAt(0));
+        fenString.append(" ");
+        fenString.append(castles);
+        fenString.append(unusedFenString);
+        fenString.append(fullMoves);
+        return fenString.toString();
     }
 }

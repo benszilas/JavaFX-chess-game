@@ -7,9 +7,11 @@ import at.ac.hcw.chess.model.chessPieces.Pawn;
 import at.ac.hcw.chess.model.utils.*;
 import at.ac.hcw.chess.view.GameView;
 import javafx.event.Event;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 
@@ -17,10 +19,8 @@ public class GameController {
     private final GameModel model;
     private final GameView view;
     private final Runnable exitCallback;
-
-    public GameController() {
-        this(() -> {});
-    }
+    private ChessApiClient client = null;
+    private boolean botResignOff = false;
 
     public GameController(Runnable exitCallback) {
         this.exitCallback = exitCallback;
@@ -35,6 +35,12 @@ public class GameController {
         model.customGame(customPieces);
         view = new GameView(model, this, exitCallback);
         lookForGameOver();
+    }
+
+    public void addBot(Color color, int depth) {
+        client = new ChessApiClient(depth);
+        model.setBot(color);
+        botResignOff = false;
     }
 
     public Region getView() {
@@ -58,6 +64,8 @@ public class GameController {
         if (moveSelectedPiece(col, row, node)) {
             changePlayer();
             lookForGameOver();
+            printTurn();
+            getBotMove();
         }
     }
 
@@ -132,7 +140,66 @@ public class GameController {
         model.changePlayer();
         removeHighlight(model.getSelectedPiece());
         model.selectPiece((ChessPiece) null);
+        view.setCursorForPieceViews(model.onePlayersPieces(model.getCurrentPlayer()), Cursor.HAND);
+        view.setCursorForPieceViews(model.onePlayersPieces(model.getNextPlayer()), Cursor.DEFAULT);
+    }
+
+    private void printTurn() {
         System.out.println("next to move: " + model.getCurrentPlayer());
+        System.out.println("FEN notation:");
+        System.out.println(model + System.lineSeparator());
+    }
+
+    /**
+     * request API for the best move of the current player, if current player is the bot.
+     * offer retry upon timeout or upon invalid move.
+     */
+    public void getBotMove() {
+        if (this.client != null && !botResignOff) {
+            view.disableButton(model.getBot());
+            botResignOff = true;
+        }
+        if (this.client != null && model.getCurrentPlayer() == model.getBot()) {
+            try {
+                client.request(model.toString());
+            } catch (Exception ignore) {
+                view.showBotError("Bot might be offline or you might have lost connection.");
+                return;
+            }
+            System.out.println(client.getText());
+            System.out.println(client.getMove());
+            System.out.println(client.getPromotion());
+
+            if (model.getCurrentPlayer() == model.getBot()) {
+                try {
+                    makeBotMove(client.getMove());
+                } catch (IndexOutOfBoundsException e) {
+                    view.showBotError("Can't make bot move or bot might be offline.");
+                }
+            }
+        }
+    }
+
+    private void makeBotMove(String fenMove) {
+        Position piece = new Position(fenMove.substring(0, 2));
+        model.selectPiece(piece);
+        Position target = new Position(fenMove.substring(2, 4));
+        if (model.getSelectedPiece() != null && model.getSelectedPiece().getPossibleMoves().contains(target)) {
+            view.chessBoardChildNode(target, Node.class).fireEvent(new MouseEvent(
+                    MouseEvent.MOUSE_CLICKED,
+                    0, 0,
+                    0, 0,
+                    MouseButton.PRIMARY,
+                    1,
+                    false, false, false, false,
+                    true,
+                    false, false, false, false,
+                    true,
+                    null
+            ));
+        } else {
+            throw new IndexOutOfBoundsException("invalid move by bot!");
+        }
     }
 
     /**
@@ -151,37 +218,35 @@ public class GameController {
         preventSelfCheck(currentKing);
     }
 
+    /**
+     * set all possible moves for next player <br>
+     * <b>important</b> to remove pawn pushes for check validation
+     */
     private void updateNextPlayerMoves(ChessPieceList currentPieces) {
-        currentPieces.forEach(chessPiece -> {
-            if (chessPiece.getColor() == model.getNextPlayer())
-                chessPiece.setPossibleMoves(currentPieces);
-        });
-    }
-
-    private void updateCurrentPlayerMoves(ChessPieceList currentPieces) {
-        currentPieces.forEach(chessPiece -> {
-            if (chessPiece.getColor() == model.getCurrentPlayer())
-                chessPiece.setLegalMoves(currentPieces);
-        });
+        model.onePlayersPieces(model.getNextPlayer())
+                .forEach(piece -> {
+                    piece.setPossibleMoves(currentPieces);
+                    if (piece instanceof Pawn)
+                        ((Pawn) piece).removeStraightMoves();
+                });
     }
 
     /**
-     * see if after any legal move, the king would be in check<br>
-     * this solves the edge case of taking a defended opponent<br>
-     * opponent moves are recalculated for every opponent next to the king<br>
+     * set all legal (no self-check) moves for current player
+     */
+    private void updateCurrentPlayerMoves(ChessPieceList currentPieces) {
+        model.onePlayersPieces(model.getCurrentPlayer())
+                .forEach(piece -> piece.setLegalMoves(currentPieces));
+    }
+
+    /**
+     * see if after taking any opponent, the king would be in check<br>
+     * opponent moves are recalculated for every opponent next to the king
      *
      * @param king the current king
      */
     private void preventSelfCheck(ChessPiece king) {
         ChessPieceList currentPieces = model.getChessPieces();
-
-        ChessPieceList opponentPawns = currentPieces.findPieces(Pawn.class, model.getNextPlayer());
-        opponentPawns.forEach(piece -> {
-            Pawn pawn = (Pawn) piece;
-            pawn.removeStraightMoves();
-        });
-
-        king.setLegalMoves(currentPieces);
 
         var nextToKing = king.getPossibleMoves().stream()
                 .filter(position -> currentPieces.getPiece(position) != null).toList();
@@ -199,17 +264,13 @@ public class GameController {
         }
 
         updateNextPlayerMoves(currentPieces);
-        opponentPawns.forEach(piece -> {
-            Pawn pawn = (Pawn) piece;
-            pawn.removeStraightMoves();
-        });
         currentPieces.add(king);
     }
 
     /**
      * <b>ASSUME<b/> the current King is <b>NOT<b/> in check<br>
      * see if the king can castle in either direction.<br>
-     * if yes, add that to the moves.
+     * if yes, add that to the moves and to the FEN notation.
      */
     private void addCastleMoves() {
         King currentKing = (King) model.getChessPieces().findPieces(King.class, model.getCurrentPlayer()).getFirst();
@@ -222,7 +283,9 @@ public class GameController {
             try {
                 Position last = new Position(range.getLast().getColumn() + direction, currentKing.getPosition().getRow());
                 range.add(last);
-                currentKing.tryAddCastleMove(getModel().getChessPieces(), range);
+                model.addCastle(
+                        currentKing.tryAddCastleMove(model.getChessPieces(), range)
+                );
             } catch (IndexOutOfBoundsException ignore) {
             }
         }
@@ -324,23 +387,16 @@ public class GameController {
      * the next player is the winner
      */
     private void emitCheckmateEvent() {
-        Color winner = (model.getCurrentPlayer() == Color.WHITE) ? Color.BLACK : Color.WHITE;
-        showResult("Checkmate!", winner.name() + " has beaten " + model.getCurrentPlayer().name() + " by checkmate!");
+        view.showResult("Checkmate!", model.getNextPlayer().name() + " has beaten " + model.getCurrentPlayer().name() + " by checkmate!");
     }
 
     private void emitDrawEvent(String message) {
-        showResult("The game is a draw!", message);
+        view.showResult("The game is a draw!", message);
     }
 
-    private void showResult(String title, String message) {
-        view.getBoard().setDisable(true);
-        System.out.println(model);
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Game Over");
-        alert.setHeaderText(title);
-        alert.setContentText(message);
-        alert.showAndWait();
-        view.getBoard().fireEvent(new GameEndedEvent());
+    public void resetSelection() {
+        model.customGame(PopulateBoard.classicGameBoard());
+        client = null;
     }
 
     private void lookForDraw() {
