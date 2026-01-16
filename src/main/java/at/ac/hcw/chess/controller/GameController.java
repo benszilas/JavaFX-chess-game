@@ -99,11 +99,24 @@ public class GameController {
         if (piece.getPossibleMoves().contains(target)) {
             System.out.println("moving " + piece + " to " + target);
             take(model.getChessPieces().getPiece(target));
+            enPassant();
             piece.moveTo(target, (ImageView) view.chessBoardChildNode(piece.getPosition(), ImageView.class));
             return true;
         }
         System.out.println("can't move " + piece + " to " + target);
         return false;
+    }
+
+    private void enPassant() {
+        //if model.getSelectedPiece() is Pawn
+
+        //Get "Position" objects with the en passant targets
+
+        //make a method in the pawn which returns the en passant targets as "MoveList", if possible
+
+        //the pawn method should return an empty "MoveList" if en passant is not possible
+
+        //if its possible, call take(model.getChessPieces().getPiece(target)) of the positions
     }
 
     public void take(ChessPiece target) {
