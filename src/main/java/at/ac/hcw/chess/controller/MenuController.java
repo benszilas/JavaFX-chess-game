@@ -3,8 +3,7 @@ package at.ac.hcw.chess.controller;
 import at.ac.hcw.chess.model.utils.ChessPieceList;
 import at.ac.hcw.chess.model.utils.Color;
 import at.ac.hcw.chess.model.utils.GameEndedEvent;
-import at.ac.hcw.chess.view.GameMenuView;
-import at.ac.hcw.chess.view.MainMenuView;
+import at.ac.hcw.chess.view.MenuView;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
@@ -18,57 +17,57 @@ public class MenuController {
     private Scene gameMenuScene;
     private final double screenWidth;
     private final double screenHeight;
+    private GameController gameController;
 
     public MenuController(Stage stage) {
         this.stage = stage;
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
         this.screenWidth = screenBounds.getWidth();
         this.screenHeight = screenBounds.getHeight();
+        this.gameController = new GameController(this::exitApplication);
     }
 
     public void showMainMenu() {
         if (mainMenuScene == null) {
-            MainMenuView mainMenuView = new MainMenuView(this);
+            MenuView mainMenuView = new MenuView(this, MenuView.MenuType.MAIN_MENU);
             Region root = mainMenuView.build();
             mainMenuScene = new Scene(root, screenWidth, screenHeight);
         }
-        stage.setTitle("SCHACH");
+        stage.setTitle("Main menu");
         stage.setScene(mainMenuScene);
     }
 
     public void showGameMenu() {
+        gameController = new GameController(this::exitApplication);
         if (gameMenuScene == null) {
-            GameMenuView gameMenuView = new GameMenuView(this);
+            MenuView gameMenuView = new MenuView(this, MenuView.MenuType.GAME_MENU);
             Region root = gameMenuView.build();
             gameMenuScene = new Scene(root, screenWidth, screenHeight);
         }
-        stage.setTitle("SPIELMENU");
+        stage.setTitle("Game menu");
         stage.setScene(gameMenuScene);
     }
 
-    public void startGame(GameController gameController) {
-        if (gameController == null)
-            gameController = new GameController(this::exitApplication);
+    public void startGame() {
         Region gameRoot = gameController.getView();
+        gameController.getBotMove();
         Scene gameScene = new Scene(gameRoot, screenWidth, screenHeight);
-        stage.setTitle("Chess");
+        stage.setTitle("Chess game");
         stage.setScene(gameScene);
         gameScene.addEventHandler(GameEndedEvent.GAME_ENDED, e-> showMainMenu());
     }
 
-    public GameController customGame(ChessPieceList customPieces, Color botColor, int botDepth) {
-        GameController gameController;
-        if (customPieces == null) {
+    public void selectGame(ChessPieceList selection) {
+        if (selection == null) {
             gameController = new GameController(this::exitApplication);
         } else {
-            gameController = new GameController(this::exitApplication, customPieces);
+            gameController = new GameController(this::exitApplication, selection);
         }
+    }
 
-        if (botColor != null) {
-            gameController.addBot(botColor, botDepth);
-        }
-
-        return gameController;
+    public void addBot(boolean white, int depth) {
+        Color color = (white) ? Color.WHITE : Color.BLACK;
+        gameController.addBot(color, depth);
     }
 
     public void exitApplication() {

@@ -27,7 +27,7 @@ tasks.withType<JavaCompile> {
 
 application {
     mainModule.set("at.ac.hcw.chess")
-    mainClass.set("at.ac.hcw.chess.ChessBoardOnlyApp")
+    mainClass.set("at.ac.hcw.chess.ChessApp")
 }
 
 javafx {
