@@ -186,6 +186,9 @@ public class GameView implements Builder<Region> {
         board.addEventHandler(CastleEvent.CASTLE, e -> {
             controller.castleRook(e.getOldRookPosition(), e.getNewRookPosition());
         });
+        board.addEventHandler(EnPassantEvent.EN_PASSANT, e -> {
+            controller.take(model.getChessPieces().getPiece(e.getTargetPawn()));
+        });
         board.addEventHandler(PromotionEvent.PROMOTION, e -> {
             showPromotionAlert(e.getPawn());
         });

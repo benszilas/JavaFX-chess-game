@@ -1,6 +1,7 @@
 package at.ac.hcw.chess.model;
 
 import at.ac.hcw.chess.model.chessPieces.ChessPiece;
+import at.ac.hcw.chess.model.chessPieces.Pawn;
 import at.ac.hcw.chess.model.chessPieces.Queen;
 import at.ac.hcw.chess.model.utils.*;
 
@@ -113,9 +114,14 @@ public class GameModel {
     }
 
     public void changePlayer() {
-        Color color = currentPlayer;
+        chessPieces.forEach(chessPiece -> {
+            if (chessPiece instanceof Pawn && chessPiece.getColor() == currentPlayer) {
+                ((Pawn) chessPiece).setEnPassant(null);
+            }
+        });
+        Color copy = currentPlayer;
         currentPlayer = nextPlayer;
-        nextPlayer = color;
+        nextPlayer = copy;
         halfMoves++;
         if ((halfMoves & 1) == 0) fullMoves++;
         this.castles = "-";
